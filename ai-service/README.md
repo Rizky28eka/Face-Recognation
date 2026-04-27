@@ -1,70 +1,108 @@
-# Face Recognition AI Service (Primary vs Secondary Dataset)
+# AI Face Recognition Service
 
-AI Service berbasis **FastAPI**, **Haar Cascade**, dan **K-Nearest Neighbors (KNN)**.
-Dibangun dengan arsitektur modular yang memisahkan penggunaan dataset primer (data utama/real) dan dataset sekunder (data publik/validasi).
+Sistem presensi otomatis berbasis pengenalan wajah menggunakan FastAPI, OpenCV (Haar Cascade), dan Scikit-Learn (KNN).
 
-## 📁 Struktur Dataset
+## Struktur Project
 
-Sistem ini membedakan dataset menjadi dua jenis:
-1. **Dataset Primer (`dataset/primary/`)**: Digunakan untuk melatih model utama yang akan dipakai saat runtime (prediksi). Mendukung proses **augmentasi gambar**.
-2. **Dataset Sekunder (`dataset/secondary/`)**: Digunakan untuk pengujian, validasi, dan benchmarking. Model yang dilatih dari dataset sekunder tidak disimpan untuk runtime.
+```text
+ai-service/
+├── src/
+│   ├── main.py              # Entry point aplikasi
+│   ├── api/
+│   │   └── routes.py        # Definisi endpoint API
+│   ├── services/
+│   │   ├── face_detection.py      # Deteksi wajah (Haar Cascade)
+│   │   ├── preprocessing.py       # Grayscale & Resize
+│   │   ├── feature_extraction.py  # Image Flattening
+│   │   ├── knn_model.py           # Load & Predict model
+│   │   └── training.py            # Training pipeline
+│   ├── utils/
+│   └── schemas/
+├── dataset/                 # Data wajah per user (folder user_1, user_2, dst)
+├── models/                  # File model .pkl (knn_model.pkl)
+├── requirements.txt         # Dependencies
+└── README.md                # Dokumentasi
+```
 
-## 🚀 Cara Menjalankan
+## Persiapan Dataset
 
-### 1. Persiapan Virtual Environment
+1. Buat folder di dalam direktori `dataset/` untuk setiap user. Contoh: `dataset/rizky`, `dataset/eka`.
+2. Masukkan foto wajah user ke dalam folder masing-masing. Pastikan foto hanya berisi satu wajah yang jelas.
+
+## Instalasi
+
+1. Pastikan Anda memiliki Python 3.8+ terinstal.
+2. Install dependencies menggunakan pip:
 
 ```bash
-cd ai-service
-python3 -m venv venvpython3 -m venv venv
-source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 2. Persiapan Dataset
+## Menjalankan Server
 
-Isi folder `dataset/primary/` dan `dataset/secondary/` dengan foto wajah.
-Strukturnya harus menggunakan subfolder sebagai nama/label.
-
-```text
-dataset/primary/
-├── user_1/
-│   ├── foto_1.jpg
-│   └── foto_2.jpg
-└── user_2/
-    └── foto_1.jpg
-```
-
-### 3. Menjalankan Server
+Jalankan server menggunakan uvicorn:
 
 ```bash
-cd src
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
 ```
-Buka Swagger UI di: [http://localhost:8000/docs](http://localhost:8000/docs)
 
----
+Server akan berjalan di `http://localhost:8000`.
 
-## 📡 API Endpoints
+## Penggunaan Endpoint
 
-### `POST /api/v1/train`
-Melatih model KNN.
-- Payload: `{"dataset_type": "primary", "use_augmentation": true}`
-- Model hanya akan disimpan ke `.pkl` jika menggunakan dataset `primary` atau `combined`.
+### 1. Training Model (`/api/v1/train`)
 
-### `POST /api/v1/evaluate`
-Menghitung akurasi model yang saat ini di-*load* ke memory menggunakan dataset target.
-- Payload: `{"dataset_type": "secondary"}`
+Gunakan endpoint ini untuk melatih model berdasarkan dataset yang ada di folder `dataset/`.
 
-### `POST /api/v1/predict`
-Menerima file gambar (form-data: `file`) dan memprediksi identitas wajah.
+- **Method**: `POST`
+- **URL**: `http://localhost:8000/api/v1/train`
+- **Response**:
+  ```json
+  {
+    "status": "success",
+    "message": "Training completed successfully. Processed 50/50 images.",
+    "classes": ["user_1", "user_2"]
+  }
+  ```
 
----
+### 2. Prediksi Wajah (`/api/v1/predict`)
 
-## 🧠 Konsep Akademis (Skripsi)
+Gunakan endpoint ini untuk mengenali wajah dari gambar yang diunggah.
 
-1. **Deteksi Wajah (Haar Cascade)**: Mengekstrak Region of Interest (ROI) dari wajah dalam gambar yang lebih besar.
-2. **Preprocessing**: Gambar di-grayscale dan di-resize ke dimensi seragam (100x100) untuk menjaga konsistensi dimensi vektor fitur.
-3. **Augmentasi**: (Khusus primer) Memutar gambar dan menyesuaikan kecerahan untuk memperbanyak jumlah data latih dan mengurangi overfitting.
-4. **Ekstraksi Fitur (Flatten)**: Mengubah matriks gambar 2D menjadi vektor 1D dengan normalisasi ke rentang nilai 0-1.
-5. **Klasifikasi (KNN)**: Menghitung jarak (*Euclidean distance*) antara fitur gambar baru dengan fitur di dalam model, lalu memilih K terdekat untuk diprediksi.
-6. **Confidence Score**: Dihitung berdasarkan nilai rata-rata jarak terhadap tetangga terdekat, menggunakan invers jarak (`1 / (1 + mean_distance)`).
+- **Method**: `POST`
+- **URL**: `http://localhost:8000/api/v1/predict`
+- **Body**: `form-data` dengan key `file` (image file)
+- **Response (Berhasil)**:
+  ```json
+  {
+    "name": "user_1",
+    "confidence": 0.87,
+    "status": "recognized"
+  }
+  ```
+- **Response (Tidak Dikenali)**:
+  ```json
+  {
+    "name": "unknown",
+    "confidence": 0.2,
+    "status": "unrecognized"
+  }
+  ```
+
+## Evaluasi Model (`tools/evaluate_model.py`)
+
+Gunakan script ini untuk melakukan pengujian model yang lebih mendalam (Precision, Recall, F1-Score) menggunakan folder `dataset/train` dan `dataset/val`.
+
+1.  Pastikan dataset sudah terbagi ke dalam folder `train/` dan `val/`.
+2.  Jalankan script evaluasi:
+
+```bash
+export PYTHONPATH=$PYTHONPATH:.
+./venv/bin/python tools/evaluate_model.py
+```
+
+Script ini akan menghasilkan:
+
+- **Classification Report**: Berisi Precision, Recall, dan F1-Score untuk setiap user.
+- **Accuracy Score**: Persentase total prediksi yang benar.
+- **Update Dashboard**: Metrik pada dashboard web akan diperbarui secara otomatis.

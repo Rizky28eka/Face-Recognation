@@ -1,106 +1,41 @@
-"""
-KNN Model Service
-=================
-Menyimpan model ke disk, load ke memory, dan melakukan prediksi.
-Hanya model dari dataset primer yang disimpan untuk runtime prediksi.
-"""
-
-import logging
-from pathlib import Path
-from typing import Any, Dict, Optional, List
-
 import joblib
+import os
 import numpy as np
-from sklearn.neighbors import KNeighborsClassifier
-
-logger = logging.getLogger(__name__)
-
-# Path default
-DEFAULT_MODEL_PATH = Path(__file__).resolve().parents[2] / "models" / "knn_model.pkl"
-CONFIDENCE_THRESHOLD = 0.5
-
+from src.utils.config import settings
 
 class KNNModelService:
-    def __init__(
-        self,
-        model_path: Path | str = DEFAULT_MODEL_PATH,
-        n_neighbors: int = 5,
-        metric: str = "euclidean",
-    ):
-        self._model_path = Path(model_path)
-        self._n_neighbors = n_neighbors
-        self._metric = metric
-        self._model: Optional[KNeighborsClassifier] = None
-        self._classes: List[str] = []
+    def __init__(self):
+        self.model_path = settings.MODEL_PATH
+        self.model = None
+        self.load_model()
 
-    def train(self, X: np.ndarray, y: List[str]) -> KNeighborsClassifier:
-        """Latih model KNN baru."""
-        n_neighbors = min(self._n_neighbors, len(X))
-        clf = KNeighborsClassifier(
-            n_neighbors=n_neighbors,
-            metric=self._metric,
-            weights="distance",
-        )
-        clf.fit(X, y)
-
-        self._model = clf
-        self._classes = list(dict.fromkeys(y))
-        logger.info(
-            "Model KNN dilatih dengan %d sampel, %d kelas, k=%d",
-            len(X), len(self._classes), n_neighbors
-        )
-        return clf
-
-    def save_model(self) -> str:
-        """Simpan model ke file .pkl"""
-        if self._model is None:
-            raise RuntimeError("Model belum dilatih.")
-
-        self._model_path.parent.mkdir(parents=True, exist_ok=True)
-        payload = {"model": self._model, "classes": self._classes}
-        joblib.dump(payload, self._model_path)
-        logger.info("Model disimpan ke: %s", self._model_path)
-        return str(self._model_path)
-
-    def load_model(self) -> None:
-        """Load model dari .pkl"""
-        if not self._model_path.exists():
-            raise FileNotFoundError(f"Model tidak ditemukan: {self._model_path}")
-
-        payload = joblib.load(self._model_path)
-        self._model = payload["model"]
-        self._classes = payload.get("classes", [])
-        logger.info("Model dimuat. Kelas yang tersedia: %s", self._classes)
-
-    def is_loaded(self) -> bool:
-        return self._model is not None
-
-    def predict(self, features: np.ndarray) -> Dict[str, Any]:
-        """Prediksi dengan confidence score."""
-        if self._model is None:
-            raise RuntimeError("Model belum dimuat.")
-
-        X = features.reshape(1, -1)
-        distances, _ = self._model.kneighbors(X)
-        mean_distance = float(np.mean(distances))
-
-        # Semakin kecil mean_distance, semakin besar confidence
-        confidence = float(1.0 / (1.0 + mean_distance))
-        confidence = round(min(max(confidence, 0.0), 1.0), 4)
-
-        predicted_label: str = self._model.predict(X)[0]
-
-        if confidence >= CONFIDENCE_THRESHOLD:
-            return {
-                "name": predicted_label,
-                "confidence": confidence,
-                "status": "recognized",
-                "message": "Face recognized successfully",
-            }
+    def load_model(self):
+        """
+        Load the KNN model from disk if it exists.
+        """
+        if os.path.exists(self.model_path):
+            try:
+                self.model = joblib.load(self.model_path)
+            except Exception as e:
+                print(f"Error loading model: {e}")
+                self.model = None
         else:
-            return {
-                "name": "unknown",
-                "confidence": confidence,
-                "status": "unrecognized",
-                "message": "Confidence below threshold",
-            }
+            print(f"Model file not found at {self.model_path}")
+
+    def predict(self, feature_vector: np.ndarray):
+        """
+        Predict the label and return confidence score.
+        """
+        if self.model is None:
+            raise ValueError("Model not loaded. Please train the model first.")
+
+        X = feature_vector.reshape(1, -1)
+        label = self.model.predict(X)[0]
+        distances, _ = self.model.kneighbors(X)
+        avg_distance = np.mean(distances)
+        confidence = 1 / (1 + avg_distance)
+        
+        return label, float(confidence)
+
+    def is_model_available(self):
+        return self.model is not None

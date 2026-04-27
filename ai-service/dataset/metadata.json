@@ -1,0 +1,154 @@
+{
+  "generated_at": "2026-04-27T20:00:58.003747",
+  "config": {
+    "total_users": 20,
+    "samples_per_user": 50,
+    "img_size": 224,
+    "output_dir": "dataset",
+    "train_ratio": 0.7,
+    "val_ratio": 0.15,
+    "test_ratio": 0.15,
+    "max_retries": 5,
+    "retry_delay": 2.0,
+    "request_delay": [
+      2.0,
+      4.0
+    ],
+    "max_workers": 3,
+    "quality": 95,
+    "seed": 42
+  },
+  "stats": {
+    "total_classes": 20,
+    "total_images": 1000,
+    "failed_downloads": 0,
+    "splits": {
+      "train": 700,
+      "val": 140,
+      "test": 160
+    },
+    "hashes": []
+  },
+  "classes": [
+    {
+      "class": "synthetic_face_001",
+      "saved": 50,
+      "failed": 0,
+      "hash": "ed978f06614e"
+    },
+    {
+      "class": "synthetic_face_002",
+      "saved": 50,
+      "failed": 0,
+      "hash": "d3fb39e285b7"
+    },
+    {
+      "class": "synthetic_face_003",
+      "saved": 50,
+      "failed": 0,
+      "hash": "1e5a8872e456"
+    },
+    {
+      "class": "synthetic_face_004",
+      "saved": 50,
+      "failed": 0,
+      "hash": "a2549a716de2"
+    },
+    {
+      "class": "synthetic_face_005",
+      "saved": 50,
+      "failed": 0,
+      "hash": "e143dc49353e"
+    },
+    {
+      "class": "synthetic_face_006",
+      "saved": 50,
+      "failed": 0,
+      "hash": "e10ebc8be491"
+    },
+    {
+      "class": "synthetic_face_007",
+      "saved": 50,
+      "failed": 0,
+      "hash": "2afe5dede63e"
+    },
+    {
+      "class": "synthetic_face_008",
+      "saved": 50,
+      "failed": 0,
+      "hash": "4f95c7844371"
+    },
+    {
+      "class": "synthetic_face_009",
+      "saved": 50,
+      "failed": 0,
+      "hash": "ac24bc5fb62c"
+    },
+    {
+      "class": "synthetic_face_010",
+      "saved": 50,
+      "failed": 0,
+      "hash": "994e79029ea1"
+    },
+    {
+      "class": "synthetic_face_011",
+      "saved": 50,
+      "failed": 0,
+      "hash": "8484f480f120"
+    },
+    {
+      "class": "synthetic_face_012",
+      "saved": 50,
+      "failed": 0,
+      "hash": "e6a0f742644c"
+    },
+    {
+      "class": "synthetic_face_013",
+      "saved": 50,
+      "failed": 0,
+      "hash": "d5963c933f2c"
+    },
+    {
+      "class": "synthetic_face_014",
+      "saved": 50,
+      "failed": 0,
+      "hash": "9c20f62b0f3d"
+    },
+    {
+      "class": "synthetic_face_015",
+      "saved": 50,
+      "failed": 0,
+      "hash": "f02df67b1414"
+    },
+    {
+      "class": "synthetic_face_016",
+      "saved": 50,
+      "failed": 0,
+      "hash": "aee32c516425"
+    },
+    {
+      "class": "synthetic_face_017",
+      "saved": 50,
+      "failed": 0,
+      "hash": "62ef8c20915a"
+    },
+    {
+      "class": "synthetic_face_018",
+      "saved": 50,
+      "failed": 0,
+      "hash": "b77d20c0c26f"
+    },
+    {
+      "class": "synthetic_face_019",
+      "saved": 50,
+      "failed": 0,
+      "hash": "29e8364304a2"
+    },
+    {
+      "class": "synthetic_face_020",
+      "saved": 50,
+      "failed": 0,
+      "hash": "b2ff050268bc"
+    }
+  ]
+}

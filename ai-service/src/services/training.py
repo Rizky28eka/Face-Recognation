@@ -1,73 +1,97 @@
-"""
-Training Service
-================
-Menghandle pipeline training menggunakan dataset primer, sekunder, atau gabungan.
-Jika dataset primer, dapat ditambahkan augmentasi gambar.
-"""
-
-import logging
-from typing import Dict, Any, List
+import os
+import cv2
+import joblib
 import numpy as np
-
-from services.dataset_loader import DatasetLoaderService
-from services.augmentation import AugmentationService
-from services.knn_model import KNNModelService
-
-logger = logging.getLogger(__name__)
-
+import json
+from datetime import datetime
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+from src.services.face_detection import FaceDetectionService
+from src.services.preprocessing import PreprocessingService
+from src.services.feature_extraction import FeatureExtractionService
+from src.utils.config import settings
 
 class TrainingService:
-    def __init__(
-        self,
-        loader: DatasetLoaderService,
-        augmentation: AugmentationService,
-        model_service: KNNModelService,
-    ):
-        self._loader = loader
-        self._augmentation = augmentation
-        self._model_service = model_service
+    def __init__(self):
+        self.dataset_path = settings.DATASET_PATH
+        self.model_path = settings.MODEL_PATH
+        self.metrics_path = settings.METRICS_PATH
+        self.face_detector = FaceDetectionService()
+        self.preprocessor = PreprocessingService()
+        self.feature_extractor = FeatureExtractionService()
 
-    def train(self, dataset_type: str, use_augmentation: bool = False) -> Dict[str, Any]:
-        """
-        Latih model. Jika menggunakan primary atau combined, simpan model untuk runtime prediksi.
-        """
-        logger.info("Memulai proses training (tipe: %s, augmentasi: %s)", dataset_type, use_augmentation)
+    def run_training(self):
+        X = []
+        y = []
+        
+        if not os.path.exists(self.dataset_path):
+            return {"status": "error", "message": f"Dataset directory '{self.dataset_path}' not found."}
 
-        X, y = [], []
-        meta_info = {}
+        # Check for train/val structure or flat structure
+        train_dir = os.path.join(self.dataset_path, "train")
+        search_path = train_dir if os.path.exists(train_dir) else self.dataset_path
+        
+        user_folders = [d for d in os.listdir(search_path) if os.path.isdir(os.path.join(search_path, d))]
+        
+        if not user_folders:
+            return {"status": "error", "message": "No user folders found in dataset."}
 
-        if dataset_type in ["primary", "combined"]:
-            X_prim, y_prim, meta_prim = self._loader.load_dataset("primary")
-            if use_augmentation:
-                logger.info("Menerapkan augmentasi pada dataset primer...")
-                X_prim, y_prim = self._augmentation.augment_dataset(X_prim, y_prim)
-                meta_prim["augmented_samples"] = len(X_prim)
-            X.extend(X_prim)
-            y.extend(y_prim)
-            meta_info["primary"] = meta_prim
+        total_images = 0
+        processed_images = 0
 
-        if dataset_type in ["secondary", "combined"]:
-            X_sec, y_sec, meta_sec = self._loader.load_dataset("secondary")
-            X.extend(X_sec)
-            y.extend(y_sec)
-            meta_info["secondary"] = meta_sec
+        for user_id in user_folders:
+            user_path = os.path.join(search_path, user_id)
+            for img_name in os.listdir(user_path):
+                img_path = os.path.join(user_path, img_name)
+                if not img_name.lower().endswith(('.png', '.jpg', '.jpeg')):
+                    continue
+                
+                total_images += 1
+                image = cv2.imread(img_path)
+                if image is None: continue
+
+                faces = self.face_detector.detect_faces(image)
+                if len(faces) > 0:
+                    face_crop = self.face_detector.crop_face(image, faces[0])
+                    preprocessed = self.preprocessor.process(face_crop)
+                    features = self.feature_extractor.extract(preprocessed)
+                    X.append(features)
+                    y.append(user_id)
+                    processed_images += 1
 
         if not X:
-            raise ValueError(f"Dataset kosong untuk tipe: {dataset_type}")
+            return {"status": "error", "message": "No faces were detected. Training aborted."}
 
-        X_arr = np.array(X)
-        self._model_service.train(X_arr, y)
+        X = np.array(X)
+        y = np.array(y)
         
-        # Simpan model jika training melibatkan dataset primary (karena digunakan untuk run-time prediksi)
-        # Jika hanya secondary, kita latih saja untuk keperluan evaluasi atau uji coba sementara
-        model_path = "Memory only (not saved)"
-        if dataset_type in ["primary", "combined"]:
-            model_path = self._model_service.save_model()
+        # Split for internal validation
+        if len(X) > len(set(y)):
+            X_train, X_test, y_train, y_test = train_test_split(
+                X, y, test_size=settings.TEST_SIZE, stratify=y, random_state=settings.RANDOM_STATE
+            )
+            knn = KNeighborsClassifier(n_neighbors=min(settings.KNN_NEIGHBORS, len(X_train)), metric='euclidean')
+            knn.fit(X_train, y_train)
+            accuracy = accuracy_score(y_test, knn.predict(X_test))
+        else:
+            accuracy = 1.0
+            
+        knn_final = KNeighborsClassifier(n_neighbors=min(settings.KNN_NEIGHBORS, len(X)), metric='euclidean')
+        knn_final.fit(X, y)
 
-        return {
-            "message": "training completed",
-            "dataset_used": dataset_type,
-            "total_samples": len(X_arr),
+        os.makedirs(os.path.dirname(self.model_path), exist_ok=True)
+        joblib.dump(knn_final, self.model_path)
+        
+        metrics = {
+            "accuracy": round(accuracy * 100, 2),
+            "total_images": processed_images,
             "total_classes": len(set(y)),
-            "model_path": model_path,
+            "classes": list(set(y)),
+            "last_trained": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "status": "ready"
         }
+        with open(self.metrics_path, "w") as f:
+            json.dump(metrics, f)
+
+        return {"status": "success", "message": "Training completed", "metrics": metrics}

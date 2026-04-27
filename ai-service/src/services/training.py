@@ -6,7 +6,7 @@ import json
 from datetime import datetime
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from src.services.face_detection import FaceDetectionService
 from src.services.preprocessing import PreprocessingService
 from src.services.feature_extraction import FeatureExtractionService
@@ -73,9 +73,16 @@ class TrainingService:
             )
             knn = KNeighborsClassifier(n_neighbors=min(settings.KNN_NEIGHBORS, len(X_train)), metric='euclidean')
             knn.fit(X_train, y_train)
-            accuracy = accuracy_score(y_test, knn.predict(X_test))
+            y_pred = knn.predict(X_test)
+            accuracy = accuracy_score(y_test, y_pred)
+            precision = precision_score(y_test, y_pred, average='weighted', zero_division=0)
+            recall = recall_score(y_test, y_pred, average='weighted', zero_division=0)
+            f1 = f1_score(y_test, y_pred, average='weighted', zero_division=0)
         else:
             accuracy = 1.0
+            precision = 1.0
+            recall = 1.0
+            f1 = 1.0
             
         knn_final = KNeighborsClassifier(n_neighbors=min(settings.KNN_NEIGHBORS, len(X)), metric='euclidean')
         knn_final.fit(X, y)
@@ -85,6 +92,9 @@ class TrainingService:
         
         metrics = {
             "accuracy": round(accuracy * 100, 2),
+            "precision": round(precision * 100, 2),
+            "recall": round(recall * 100, 2),
+            "f1_score": round(f1 * 100, 2),
             "total_images": processed_images,
             "total_classes": len(set(y)),
             "classes": list(set(y)),

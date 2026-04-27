@@ -41,6 +41,9 @@ async def startup_event():
             print(f"{BOLD}--- MODEL STATUS ---{END}")
             print(f"{GREEN}● {END}Status      : {m.get('status', 'Unknown').upper()}")
             print(f"{GREEN}● {END}Accuracy    : {m.get('accuracy', 'N/A')}%")
+            print(f"{GREEN}● {END}Precision   : {m.get('precision', 'N/A')}%")
+            print(f"{GREEN}● {END}Recall      : {m.get('recall', 'N/A')}%")
+            print(f"{GREEN}● {END}F1-Score    : {m.get('f1_score', 'N/A')}%")
             print(f"{GREEN}● {END}Users       : {m.get('total_classes', 0)}")
             print(f"{GREEN}● {END}Images      : {m.get('total_images', 0)}")
             print(f"{GREEN}● {END}Last Trained: {m.get('last_trained', 'Never')}")
@@ -56,7 +59,7 @@ async def startup_event():
 @app.get("/", response_class=HTMLResponse)
 async def dashboard():
     # Load metrics
-    metrics = {"accuracy": "N/A", "total_images": 0, "total_classes": 0, "last_trained": "Never", "status": "Not Trained"}
+    metrics = {"accuracy": "N/A", "precision": "N/A", "recall": "N/A", "f1_score": "N/A", "total_images": 0, "total_classes": 0, "last_trained": "Never", "status": "Not Trained"}
     if os.path.exists(settings.METRICS_PATH):
         with open(settings.METRICS_PATH, "r") as f:
             metrics = json.load(f)
@@ -195,7 +198,19 @@ async def dashboard():
             <div class="stats-grid">
                 <div class="stat-card">
                     <span class="stat-value">{metrics["accuracy"]}%</span>
-                    <span class="stat-label">Model Accuracy</span>
+                    <span class="stat-label">Accuracy</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">{metrics["precision"]}%</span>
+                    <span class="stat-label">Precision</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">{metrics["recall"]}%</span>
+                    <span class="stat-label">Recall</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">{metrics["f1_score"]}%</span>
+                    <span class="stat-label">F1-Score</span>
                 </div>
                 <div class="stat-card">
                     <span class="stat-value">{metrics["total_classes"]}</span>

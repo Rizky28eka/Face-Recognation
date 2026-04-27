@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import io
 import os
+import json
 import shutil
 from src.services.face_detection import FaceDetectionService
 from src.services.preprocessing import PreprocessingService
@@ -27,6 +28,34 @@ async def train_model():
         raise HTTPException(status_code=400, detail=result["message"])
     knn_service.load_model()
     return result
+
+@router.get("/faces/status")
+async def get_status():
+    """
+    Returns the current status and metrics of the trained face recognition model.
+    """
+    metrics = {
+        "accuracy": "N/A", 
+        "precision": "N/A", 
+        "recall": "N/A", 
+        "f1_score": "N/A", 
+        "total_images": 0, 
+        "total_classes": 0, 
+        "last_trained": "Never", 
+        "status": "Not Trained"
+    }
+    
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+    metrics_path = os.path.join(project_root, settings.METRICS_PATH)
+    
+    if os.path.exists(metrics_path):
+        try:
+            with open(metrics_path, "r") as f:
+                metrics = json.load(f)
+        except Exception:
+            pass
+            
+    return metrics
 
 @router.post("/predict")
 async def predict_face(file: UploadFile = File(...)):
@@ -90,7 +119,7 @@ async def add_face(
     safe_name = name.strip().replace(" ", "_").lower()
 
     # Buat path absolut ke dataset (2 level up dari file routes.py: api/ -> src/ -> root)
-    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
     base_dataset_path = os.path.join(project_root, settings.DATASET_PATH)
     
     train_dir = os.path.join(base_dataset_path, 'train', safe_name)

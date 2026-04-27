@@ -82,6 +82,9 @@ export default function Show({ employee }: Props) {
                                             }
                                             alt={employee.name}
                                             className="w-32 h-32 rounded-3xl object-cover border-4 border-white shadow-xl mx-auto bg-white"
+                                            onError={(e) => {
+                                                e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(employee.name)}&background=fff&color=6366f1&size=128&bold=true`;
+                                            }}
                                         />
                                         {/* Status wajah */}
                                         <div

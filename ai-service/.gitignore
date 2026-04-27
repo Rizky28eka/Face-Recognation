@@ -149,7 +149,11 @@ cython_debug/
 
 # Project Specific
 models/*.pkl
+models/*.clf
 models/metrics.json
+dataset/train/
+dataset/val/
+dataset/test/
 dataset/logs/
 !models/.gitkeep
 !dataset/.gitkeep

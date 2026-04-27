@@ -4,7 +4,7 @@ AI_DIR = ai-service
 PYTHON_VENV = $(AI_DIR)/venv/bin/activate
 AI_PORT = 8088
 
-.PHONY: help setup install dev dev-web dev-front dev-ai migrate seed clear clean
+.PHONY: help setup install dev dev-web dev-front dev-ai migrate seed seed-ai clear clean
 
 # Tampilkan bantuan (default)
 help:
@@ -19,7 +19,8 @@ help:
 	@echo "  make dev-front  : Menjalankan Node/Vite frontend saja"
 	@echo "  make dev-ai     : Menjalankan Python FastAPI service saja"
 	@echo "  make migrate    : Eksekusi migrasi database"
-	@echo "  make seed       : Eksekusi seeder database"
+	@echo "  make seed       : Eksekusi seeder database Laravel"
+	@echo "  make seed-ai    : Generate dataset wajah dummy & Training AI"
 	@echo "  make clear      : Bersihkan cache Laravel, dataset, model, dan foto"
 	@echo "  make clean      : Hapus instalasi (vendor, node_modules, venv, lock files)"
 	@echo "========================================================"
@@ -61,8 +62,15 @@ migrate:
 	cd $(WEB_DIR) && php artisan migrate
 
 seed:
-	@echo "🌱 Menjalankan seeder database..."
+	@echo "🌱 Menjalankan seeder database Laravel..."
 	cd $(WEB_DIR) && php artisan db:seed
+
+seed-ai:
+	@echo "🤖 Men-generate dataset dummy wajah (Sintetis)..."
+	. $(PYTHON_VENV) && cd $(AI_DIR) && python3 tools/generate_dummy_dataset.py
+	@echo "🧠 Memulai proses Training Model Face Recognition..."
+	. $(PYTHON_VENV) && cd $(AI_DIR) && python3 -c "from src.services.training import TrainingService; import json; result = TrainingService().run_training(); print(json.dumps(result, indent=2))"
+	@echo "✅ Generate dataset dan Training selesai!"
 
 # --- Utilities ---
 clear:

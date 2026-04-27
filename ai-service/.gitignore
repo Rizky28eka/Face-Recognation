@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+venv/
+.venv/
+env/
+
+dataset/*/
+!dataset/primary/.gitkeep
+!dataset/secondary/.gitkeep
+
+models/*.pkl
+!models/.gitkeep
+
+.DS_Store

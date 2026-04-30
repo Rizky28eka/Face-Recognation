@@ -59,7 +59,7 @@ class AttendanceController extends Controller
             $branch = Branch::find($user->branch_id);
         }
 
-        $isWfh = $user->shift && in_array($user->shift->work_type, ['wfh', 'hybrid']);
+        $isWfh = $user->is_wfh || ($user->shift && in_array($user->shift->work_type, ['wfh', 'hybrid']));
 
         // Jika user belum punya cabang spesifik dan bukan WFH, cari cabang mana saja yang masuk radius
         if (!$branch && !$isWfh) {
@@ -166,19 +166,25 @@ class AttendanceController extends Controller
 
             if ($user->shift) {
                 $startTime = Carbon::createFromFormat('H:i:s', $user->shift->start_time);
-                $endTime = Carbon::createFromFormat('H:i:s', $user->shift->end_time);
-                
-                // Jika sudah lewat jam 13:00 atau lewat jam masuk + 4 jam, anggap check-out
-                if ($now->hour >= 13 || $now->diffInHours($startTime) >= 4) {
+                $endTime   = Carbon::createFromFormat('H:i:s', $user->shift->end_time);
+
+                // Jika sudah lewat jam 13:00 atau selisih dari jam masuk >= 4 jam, anggap check-out
+                // Gunakan abs() untuk mencegah nilai negatif dari diffInHours
+                $hoursFromStart = (int) abs($now->diffInHours($startTime, false));
+                if ($now->hour >= 13 || $hoursFromStart >= 4) {
                     $type = 'check-out';
-                    
-                    // Hitung lembur jika lewat jam pulang
+
+                    // Hitung lembur: hanya jika $now BENAR-BENAR setelah jam pulang
                     if ($now->greaterThan($endTime)) {
-                        $overtimeMinutes = $now->diffInMinutes($endTime);
+                        $overtimeMinutes = (int) $now->diffInMinutes($endTime, false);
+                        // diffInMinutes(false) mengembalikan negatif jika $now < $endTime, pastikan >= 0
+                        $overtimeMinutes = max(0, $overtimeMinutes);
                     }
                 } else {
+                    // Hitung keterlambatan: hanya jika $now BENAR-BENAR setelah jam masuk
                     if ($now->greaterThan($startTime)) {
-                        $lateMinutes = $now->diffInMinutes($startTime);
+                        $lateMinutes = (int) $startTime->diffInMinutes($now);
+                        $lateMinutes = max(0, $lateMinutes);
                     }
                 }
             } else {
@@ -189,6 +195,7 @@ class AttendanceController extends Controller
             Attendance::create([
                 'user_id' => $user->id,
                 'type' => $type,
+                'work_type' => $isWfh ? 'wfh' : 'wfo',
                 'confidence' => $result['confidence'],
                 'image_path' => $finalPath,
                 'latitude' => $request->input('latitude'),

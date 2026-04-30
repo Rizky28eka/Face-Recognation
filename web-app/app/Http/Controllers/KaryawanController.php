@@ -93,8 +93,14 @@ class KaryawanController extends Controller
             abort(403);
         }
 
+        $attendances = \App\Models\Attendance::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
         return Inertia::render('Karyawan/Show', [
-            'employee' => $user->load(['shift', 'branch'])
+            'employee' => $user->load(['shift', 'branch']),
+            'recentAttendances' => $attendances
         ]);
     }
 
@@ -162,5 +168,25 @@ class KaryawanController extends Controller
         $user->delete();
 
         return redirect()->route('karyawan.index')->with('success', 'Karyawan berhasil dihapus.');
+    }
+
+    public function toggleWfh(Request $request, User $user)
+    {
+        /** @var \App\Models\User $currentUser */
+        $currentUser = Auth::user();
+
+        if ($user->tenant_id !== $currentUser->tenant_id) {
+            abort(403);
+        }
+
+        $request->validate([
+            'is_wfh' => 'required|boolean',
+        ]);
+
+        $user->update([
+            'is_wfh' => $request->is_wfh,
+        ]);
+
+        return redirect()->back()->with('success', 'Status Izin WFH berhasil diperbarui.');
     }
 }

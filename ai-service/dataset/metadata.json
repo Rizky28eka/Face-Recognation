@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-28T00:43:48.700488",
+  "generated_at": "2026-04-28T13:24:11.486554",
   "config": {
     "total_users": 20,
     "samples_per_user": 50,
@@ -19,8 +19,8 @@
     "seed": 42
   },
   "stats": {
-    "total_classes": 20,
-    "total_images": 1000,
+    "total_classes": 24,
+    "total_images": 1020,
     "failed_downloads": 0,
     "splits": {
       "train": 700,
@@ -34,121 +34,145 @@
       "class": "synthetic_face_001",
       "saved": 50,
       "failed": 0,
-      "hash": "ef1a42baeba4"
+      "hash": "9972857006df"
     },
     {
       "class": "synthetic_face_002",
       "saved": 50,
       "failed": 0,
-      "hash": "fe53b5b8a834"
+      "hash": "86fb932603d9"
     },
     {
       "class": "synthetic_face_003",
       "saved": 50,
       "failed": 0,
-      "hash": "22bf05f193f2"
+      "hash": "bcafc6f88f4a"
     },
     {
       "class": "synthetic_face_004",
       "saved": 50,
       "failed": 0,
-      "hash": "490cf1c85a6d"
+      "hash": "513bc2070b1b"
     },
     {
       "class": "synthetic_face_005",
       "saved": 50,
       "failed": 0,
-      "hash": "8f14bdac2539"
+      "hash": "cbb69faf16f2"
     },
     {
       "class": "synthetic_face_006",
       "saved": 50,
       "failed": 0,
-      "hash": "12ef67271dcd"
+      "hash": "2e4638751d2f"
     },
     {
       "class": "synthetic_face_007",
       "saved": 50,
       "failed": 0,
-      "hash": "978c966dce5d"
+      "hash": "2a27632d730f"
     },
     {
       "class": "synthetic_face_008",
       "saved": 50,
       "failed": 0,
-      "hash": "a07967af2ce0"
+      "hash": "8337b572322a"
     },
     {
       "class": "synthetic_face_009",
       "saved": 50,
       "failed": 0,
-      "hash": "0b905140d5bd"
+      "hash": "b18300cfdf2a"
     },
     {
       "class": "synthetic_face_010",
       "saved": 50,
       "failed": 0,
-      "hash": "4fe4bc889812"
+      "hash": "14e904c03967"
     },
     {
       "class": "synthetic_face_011",
       "saved": 50,
       "failed": 0,
-      "hash": "93a4fb63d942"
+      "hash": "c2e7ddb727a3"
     },
     {
       "class": "synthetic_face_012",
       "saved": 50,
       "failed": 0,
-      "hash": "d42e977f2cd5"
+      "hash": "7ae80916f458"
     },
     {
       "class": "synthetic_face_013",
       "saved": 50,
       "failed": 0,
-      "hash": "2316c5a93ac6"
+      "hash": "bde978fd5c3d"
     },
     {
       "class": "synthetic_face_014",
       "saved": 50,
       "failed": 0,
-      "hash": "0e76f1ada7d5"
+      "hash": "0778fa72229c"
     },
     {
       "class": "synthetic_face_015",
       "saved": 50,
       "failed": 0,
-      "hash": "9e664b0ecf53"
+      "hash": "44852d136bca"
     },
     {
       "class": "synthetic_face_016",
       "saved": 50,
       "failed": 0,
-      "hash": "6c7128038cb6"
+      "hash": "583af1eb397b"
     },
     {
       "class": "synthetic_face_017",
       "saved": 50,
       "failed": 0,
-      "hash": "77c2ef2d4e7e"
+      "hash": "2cd3b631a427"
     },
     {
       "class": "synthetic_face_018",
       "saved": 50,
       "failed": 0,
-      "hash": "4074bac4246f"
+      "hash": "540263ca08b4"
     },
     {
       "class": "synthetic_face_019",
       "saved": 50,
       "failed": 0,
-      "hash": "3b2bcc28d827"
+      "hash": "2e092c322cfa"
     },
     {
       "class": "synthetic_face_020",
       "saved": 50,
       "failed": 0,
-      "hash": "937e5fac74da"
+      "hash": "d9a95ad2601b"
+    },
+    {
+      "class": "6_eka",
+      "saved": 5,
+      "failed": 0,
+      "hash": "user_registration"
+    },
+    {
+      "class": "7_badar",
+      "saved": 5,
+      "failed": 0,
+      "hash": "user_registration"
+    },
+    {
+      "class": "7_rahmat",
+      "saved": 5,
+      "failed": 0,
+      "hash": "user_registration"
+    },
+    {
+      "class": "8_hasim",
+      "saved": 5,
+      "failed": 0,
+      "hash": "user_registration"
     }
   ]
 }

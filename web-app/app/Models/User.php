@@ -27,6 +27,7 @@ class User extends Authenticatable
         'password',
         'face_path',
         'is_face_registered',
+        'is_wfh',
         'role',
     ];
 

@@ -34,61 +34,75 @@ class ProfileController extends Controller
     }
 
     /**
-     * Simpan foto wajah dan daftarkan ke AI.
+     * Upload and verify a single face image.
      */
-    public function storeFace(Request $request): RedirectResponse
+    public function uploadSingleFace(Request $request)
     {
         $request->validate([
-            'images' => 'required|array|size:5',
-            'images.*' => 'required|string',
+            'image' => 'required|string',
+            'index' => 'required|integer',
         ]);
 
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        $successCount = 0;
-        $savedPath = null;
+        // Decode image
+        $imageData = $request->image;
+        $image = str_replace('data:image/jpeg;base64,', '', $imageData);
+        $image = str_replace(' ', '+', $image);
+        $imageName = 'face_' . $user->id . '_' . time() . '_' . $request->index . '.jpg';
+        
+        $path = 'faces/' . $imageName;
+        Storage::disk('public')->put($path, base64_decode($image));
 
-        foreach ($request->images as $index => $imageData) {
-            // Decode image
-            $image = str_replace('data:image/jpeg;base64,', '', $imageData);
-            $image = str_replace(' ', '+', $image);
-            $imageName = 'face_' . $user->id . '_' . time() . '_' . $index . '.jpg';
-            
-            $path = 'faces/' . $imageName;
-            Storage::disk('public')->put($path, base64_decode($image));
+        // Register to AI Service (Gunakan format ID_Name untuk mencegah nama kembar)
+        $uniqueName = $user->id . '_' . preg_replace('/[^A-Za-z0-9]/', '', $user->name);
+        $absolutePath = storage_path('app/public/' . $path);
+        
+        $result = $this->faceService->registerFace($uniqueName, $absolutePath, $request->index);
 
-            if ($index === 0) {
-                // Jadikan foto pertama sebagai foto profil utama
-                $savedPath = $path;
-            }
-
-            // Register to AI Service (Gunakan format ID_Name untuk mencegah nama kembar)
-            $uniqueName = $user->id . '_' . preg_replace('/[^A-Za-z0-9]/', '', $user->name);
-            $absolutePath = storage_path('app/public/' . $path);
-            $result = $this->faceService->registerFace($uniqueName, $absolutePath);
-
-            if (isset($result['status']) && $result['status'] === 'success') {
-                $successCount++;
-            } else {
-                // Hapus jika gagal dikenali AI
-                Storage::disk('public')->delete($path);
-            }
-        }
-
-        if ($successCount === 5) {
-            $user->update([
-                'face_path' => $savedPath,
-                'is_face_registered' => true
+        if (isset($result['status']) && $result['status'] === 'success') {
+            return response()->json([
+                'success' => true,
+                'path'    => $path,
+                'message' => 'Wajah terdeteksi.',
             ]);
-
-            // Jalankan training otomatis agar wajah baru langsung dikenali
-            $this->faceService->train();
-
-            return Redirect::route('dashboard')->with('success', 'Ke-5 foto wajah berhasil didaftarkan! Selamat bergabung.');
         }
 
-        return Redirect::back()->with('error', 'Beberapa foto gagal diverifikasi AI (pastikan wajah terlihat jelas). Silakan coba lagi.');
+        // Hapus file sementara jika gagal
+        Storage::disk('public')->delete($path);
+
+        // Teruskan pesan error dari AI Service dengan status HTTP yang sesuai
+        $httpStatus = $result['http_status'] ?? 422;
+        $message    = $result['message'] ?? 'Wajah tidak terdeteksi atau tidak jelas.';
+
+        return response()->json([
+            'success' => false,
+            'message' => $message,
+        ], $httpStatus);
+    }
+
+    /**
+     * Selesaikan proses registrasi wajah setelah semua foto diverifikasi.
+     */
+    public function completeFaceSetup(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'main_photo_path' => 'nullable|string'
+        ]);
+
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        $user->update([
+            'face_path' => $request->main_photo_path,
+            'is_face_registered' => true
+        ]);
+
+        // Jalankan training otomatis agar wajah baru langsung dikenali
+        $this->faceService->train();
+
+        return Redirect::route('dashboard')->with('success', 'Ke-5 foto wajah berhasil dipelajari AI. Pendaftaran berhasil!');
     }
     /**
      * Display the user's profile form.

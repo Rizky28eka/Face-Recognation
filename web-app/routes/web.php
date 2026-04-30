@@ -8,6 +8,9 @@ use App\Http\Controllers\BranchController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\InvitationController;
+use App\Http\Controllers\TenantController;
+use App\Http\Controllers\AIStatusController;
+use App\Http\Controllers\SystemSettingController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -44,6 +47,7 @@ Route::middleware(['auth', 'verified', 'face_registered'])->group(function () {
     Route::get('/karyawan/{user}/edit', [KaryawanController::class, 'edit'])->name('karyawan.edit');
     Route::patch('/karyawan/{user}', [KaryawanController::class, 'update'])->name('karyawan.update');
     Route::delete('/karyawan/{user}', [KaryawanController::class, 'destroy'])->name('karyawan.destroy');
+    Route::post('/karyawan/{user}/toggle-wfh', [KaryawanController::class, 'toggleWfh'])->name('karyawan.toggle-wfh');
 
     // Settings Routes
     Route::get('/settings/branches', [BranchController::class, 'index'])->name('settings.branches');
@@ -67,7 +71,22 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('/profile/face-setup', [ProfileController::class, 'faceSetup'])->name('profile.face-setup');
-    Route::post('/profile/face-setup', [ProfileController::class, 'storeFace'])->name('profile.face-setup.store');
+    Route::post('/profile/face-setup/upload-single', [ProfileController::class, 'uploadSingleFace'])->name('profile.face-setup.upload-single');
+    Route::post('/profile/face-setup/complete', [ProfileController::class, 'completeFaceSetup'])->name('profile.face-setup.complete');
+});
+
+Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
+    Route::get('/tenants', [TenantController::class, 'index'])->name('tenants.index');
+    Route::get('/tenants/{tenant}', [TenantController::class, 'show'])->name('tenants.show');
+    Route::get('/tenants/{tenant}/edit', [TenantController::class, 'edit'])->name('tenants.edit');
+    Route::patch('/tenants/{tenant}', [TenantController::class, 'update'])->name('tenants.update');
+    Route::delete('/tenants/{tenant}', [TenantController::class, 'destroy'])->name('tenants.destroy');
+
+    Route::get('/ai-status', [AIStatusController::class, 'index'])->name('ai.status');
+
+    Route::get('/system/settings', [SystemSettingController::class, 'index'])->name('system.settings');
+    Route::patch('/system/settings', [SystemSettingController::class, 'update'])->name('system.settings.update');
+    Route::post('/system/clear-cache', [SystemSettingController::class, 'clearCache'])->name('system.clear-cache');
 });
 
 require __DIR__.'/auth.php';

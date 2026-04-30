@@ -13,7 +13,13 @@ import {
     User as UserIcon,
     CheckCircle2,
     XCircle,
+    Home,
+    Activity,
 } from 'lucide-react';
+import { Switch } from '@/Components/ui/switch';
+import { router } from '@inertiajs/react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 interface User {
     id: number;
@@ -23,6 +29,7 @@ interface User {
     avatar?: string;
     face_path: string | null;
     is_face_registered: boolean;
+    is_wfh: boolean;
     tenant_id: number;
     created_at: string;
     branch?: { name: string };
@@ -33,11 +40,42 @@ interface User {
     };
 }
 
-interface Props {
-    employee: User;
+interface Attendance {
+    id: number;
+    type: 'check_in' | 'check_out';
+    attended_at: string;
+    late_minutes: number;
+    image_path: string | null;
+    work_type: 'wfo' | 'wfh' | 'dinas_luar';
 }
 
-export default function Show({ employee }: Props) {
+interface Props {
+    employee: User;
+    recentAttendances?: Attendance[];
+}
+
+export default function Show({ employee, recentAttendances = [] }: Props) {
+    const [isWfh, setIsWfh] = useState(employee.is_wfh);
+    const [toggling, setToggling] = useState(false);
+
+    const toggleWfh = async (checked: boolean) => {
+        setToggling(true);
+        try {
+            await window.axios.post(route('karyawan.toggle-wfh', employee.id), {
+                is_wfh: checked,
+            });
+            setIsWfh(checked);
+            toast.success(
+                checked ? 'Izin WFH diaktifkan.' : 'Izin WFH dinonaktifkan.',
+            );
+        } catch (error) {
+            toast.error('Gagal memperbarui status WFH.');
+            setIsWfh(!checked); // revert state
+        } finally {
+            setToggling(false);
+        }
+    };
+
     return (
         <SidebarProvider>
             <AppSidebar variant="inset" />
@@ -175,6 +213,31 @@ export default function Show({ employee }: Props) {
                                             Edit Profil
                                         </Button>
                                     </Link>
+
+                                    {/* WFH Toggle Card */}
+                                    <div className="mt-4 p-4 rounded-2xl border-2 border-indigo-50 bg-indigo-50/50 flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div
+                                                className={`p-2 rounded-xl ${isWfh ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-100 text-gray-500'}`}
+                                            >
+                                                <Home className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold text-gray-900">
+                                                    Izin WFH
+                                                </p>
+                                                <p className="text-xs text-gray-500 font-medium">
+                                                    Bypass radius lokasi
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <Switch
+                                            checked={isWfh}
+                                            onCheckedChange={toggleWfh}
+                                            disabled={toggling}
+                                            className={`${isWfh ? 'bg-emerald-500' : 'bg-gray-200'}`}
+                                        />
+                                    </div>
                                 </div>
                             </Card>
 
@@ -237,11 +300,75 @@ export default function Show({ employee }: Props) {
                                     <h3 className="text-lg font-bold text-gray-900 mb-4">
                                         Aktivitas Terakhir
                                     </h3>
-                                    <div className="py-8 text-center border-2 border-dashed border-gray-50 rounded-2xl">
-                                        <p className="text-gray-400">
-                                            Belum ada riwayat aktivitas terbaru.
-                                        </p>
-                                    </div>
+
+                                    {recentAttendances.length === 0 ? (
+                                        <div className="py-8 text-center border-2 border-dashed border-gray-50 rounded-2xl">
+                                            <p className="text-gray-400">
+                                                Belum ada riwayat aktivitas
+                                                terbaru.
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            {recentAttendances.map((attn) => (
+                                                <div
+                                                    key={attn.id}
+                                                    className="flex items-center justify-between p-4 border border-gray-100 rounded-2xl hover:bg-gray-50/50 transition-colors"
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <div
+                                                            className={`p-2 rounded-xl ${attn.type === 'check_in' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}
+                                                        >
+                                                            <Activity className="w-5 h-5" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                                                                {attn.type ===
+                                                                'check_in'
+                                                                    ? 'Absen Masuk'
+                                                                    : 'Absen Pulang'}
+                                                                <span
+                                                                    className={`text-[10px] uppercase px-2 py-0.5 rounded-full font-bold tracking-wider ${
+                                                                        attn.late_minutes >
+                                                                        0
+                                                                            ? 'bg-rose-100 text-rose-700'
+                                                                            : 'bg-emerald-100 text-emerald-700'
+                                                                    }`}
+                                                                >
+                                                                    {attn.late_minutes >
+                                                                    0
+                                                                        ? 'TERLAMBAT'
+                                                                        : 'TEPAT WAKTU'}
+                                                                </span>
+                                                            </p>
+                                                            <p className="text-xs text-gray-500 font-medium">
+                                                                {new Date(
+                                                                    attn.attended_at ||
+                                                                        '',
+                                                                ).toLocaleString(
+                                                                    'id-ID',
+                                                                    {
+                                                                        weekday:
+                                                                            'long',
+                                                                        year: 'numeric',
+                                                                        month: 'long',
+                                                                        day: 'numeric',
+                                                                        hour: '2-digit',
+                                                                        minute: '2-digit',
+                                                                    },
+                                                                )}{' '}
+                                                                •{' '}
+                                                                {(
+                                                                    attn.work_type ||
+                                                                    ''
+                                                                ).toUpperCase()}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </Card>
                             </div>
                         </div>

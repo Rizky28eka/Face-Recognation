@@ -31,11 +31,30 @@ class KNNModelService:
 
         X = feature_vector.reshape(1, -1)
         label = self.model.predict(X)[0]
-        distances, _ = self.model.kneighbors(X)
+        distances, indices = self.model.kneighbors(X)
         avg_distance = np.mean(distances)
-        confidence = 1 / (1 + avg_distance)
         
-        return label, float(confidence)
+        # Get labels of the nearest neighbors
+        neighbor_labels = [self.model.classes_[self.model._y[i]] for i in indices[0]]
+        
+        # Use predict_proba for confidence based on neighbor majority
+        proba = self.model.predict_proba(X)[0]
+        confidence = float(np.max(proba))
+        
+        print("\n" + "="*50)
+        print(f"[DEBUG KNN] Prediksi Utama -> Label: {label}, Confidence: {confidence:.4f}")
+        print(f"[DEBUG KNN] Rata-rata Jarak (Avg Distance): {avg_distance:.2f}")
+        print("[DEBUG KNN] Detail Tetangga Terdekat (Nearest Neighbors):")
+        for i, (dist, lbl) in enumerate(zip(distances[0], neighbor_labels)):
+            print(f"  -> Tetangga {i+1}: Label = {lbl}, Jarak = {dist:.2f}")
+        
+        # Solusi sementara: Jika jarak rata-rata terlalu jauh (> 3000), wajah sebenarnya tidak dikenali.
+        # Kita bisa turunkan confidence secara paksa jika mau, tapi saat ini kita biarkan untuk di-debug.
+        if avg_distance > 3000:
+            print("[DEBUG KNN] ⚠️ PERINGATAN: Jarak terlalu jauh! Ini kemungkinan besar orang yang salah/tidak dikenal.")
+        print("="*50 + "\n")
+        
+        return label, float(confidence), float(avg_distance)
 
     def is_model_available(self):
         return self.model is not None

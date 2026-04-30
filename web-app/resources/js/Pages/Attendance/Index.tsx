@@ -105,12 +105,22 @@ export default function Index({ recentAttendances }: Props) {
                 }
             } catch (error) {
                 setStatus('error');
-                const errMsg =
+                if (
+                    axios.isAxiosError(error) &&
+                    error.response?.status === 400 &&
+                    error.response?.data?.data
+                ) {
+                    console.error(
+                        '[DEBUG FRONTEND] AI Service Response Data:',
+                        JSON.stringify(error.response.data.data, null, 2),
+                    );
+                }
+                const errorMessage =
                     axios.isAxiosError(error) && error.response?.data?.message
                         ? error.response.data.message
-                        : 'Terjadi kesalahan saat scan wajah.';
-                setMessage(errMsg);
-                toast.error(errMsg);
+                        : 'Gagal melakukan absensi. Silakan coba lagi.';
+                setMessage(errorMessage);
+                toast.error(errorMessage);
             } finally {
                 setProcessing(false);
             }

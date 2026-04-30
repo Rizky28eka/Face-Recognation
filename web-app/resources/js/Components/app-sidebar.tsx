@@ -62,9 +62,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
     if (role === 'superadmin') {
         navMain.push(
-            { title: 'Manajemen Tenant', url: '#', icon: Building2Icon },
-            { title: 'Status AI', url: '#', icon: CpuIcon },
-            { title: 'Pengaturan Sistem', url: '#', icon: SettingsIcon },
+            {
+                title: 'Manajemen Tenant',
+                url: route('tenants.index'),
+                icon: Building2Icon,
+            },
+            {
+                title: 'Status AI',
+                url: route('ai.status'),
+                icon: CpuIcon,
+            },
+            {
+                title: 'Pengaturan Sistem',
+                url: route('system.settings'),
+                icon: SettingsIcon,
+            },
         );
     } else if (role === 'owner') {
         navMain.push(

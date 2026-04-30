@@ -15,6 +15,7 @@ class Attendance extends Model
         'tenant_id',
         'branch_id',
         'type',
+        'work_type',
         'confidence',
         'image_path',
         'latitude',

@@ -160,35 +160,46 @@ class AttendanceController extends Controller
 
             // Hitung Tipe Absensi & Keterlambatan
             $now = Carbon::now();
-            $type = 'check-in';
+            $today = $now->toDateString();
             $lateMinutes = 0;
             $overtimeMinutes = 0;
 
-            if ($user->shift) {
-                $startTime = Carbon::createFromFormat('H:i:s', $user->shift->start_time);
-                $endTime   = Carbon::createFromFormat('H:i:s', $user->shift->end_time);
+            // Penentuan tipe: cek riwayat absensi hari ini
+            // ✅ Lebih akurat daripada heuristik jam (mencegah check-in salah jadi check-out)
+            $todayCheckIn = Attendance::where('user_id', $user->id)
+                ->where('type', 'check-in')
+                ->whereDate('attended_at', $today)
+                ->first();
 
-                // Jika sudah lewat jam 13:00 atau selisih dari jam masuk >= 4 jam, anggap check-out
-                // Gunakan abs() untuk mencegah nilai negatif dari diffInHours
-                $hoursFromStart = (int) abs($now->diffInHours($startTime, false));
-                if ($now->hour >= 13 || $hoursFromStart >= 4) {
-                    $type = 'check-out';
+            $todayCheckOut = Attendance::where('user_id', $user->id)
+                ->where('type', 'check-out')
+                ->whereDate('attended_at', $today)
+                ->first();
 
-                    // Hitung lembur: hanya jika $now BENAR-BENAR setelah jam pulang
-                    if ($now->greaterThan($endTime)) {
-                        $overtimeMinutes = (int) $now->diffInMinutes($endTime, false);
-                        // diffInMinutes(false) mengembalikan negatif jika $now < $endTime, pastikan >= 0
-                        $overtimeMinutes = max(0, $overtimeMinutes);
-                    }
-                } else {
-                    // Hitung keterlambatan: hanya jika $now BENAR-BENAR setelah jam masuk
+            if (!$todayCheckIn) {
+                // Belum pernah check-in hari ini → ini adalah check-in
+                $type = 'check-in';
+
+                if ($user->shift) {
+                    $startTime = Carbon::createFromFormat('H:i:s', $user->shift->start_time);
+                    // Hitung keterlambatan jika melewati jam masuk
                     if ($now->greaterThan($startTime)) {
                         $lateMinutes = (int) $startTime->diffInMinutes($now);
                         $lateMinutes = max(0, $lateMinutes);
                     }
                 }
             } else {
-                $type = $now->hour < 12 ? 'check-in' : 'check-out';
+                // Sudah check-in hari ini → ini adalah check-out
+                $type = 'check-out';
+
+                if ($user->shift) {
+                    $endTime = Carbon::createFromFormat('H:i:s', $user->shift->end_time);
+                    // Hitung lembur jika melewati jam pulang
+                    if ($now->greaterThan($endTime)) {
+                        $overtimeMinutes = (int) $now->diffInMinutes($endTime);
+                        $overtimeMinutes = max(0, $overtimeMinutes);
+                    }
+                }
             }
 
             // Simpan riwayat

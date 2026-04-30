@@ -19,8 +19,8 @@
     "seed": 42
   },
   "stats": {
-    "total_classes": 24,
-    "total_images": 1020,
+    "total_classes": 25,
+    "total_images": 1025,
     "failed_downloads": 0,
     "splits": {
       "train": 700,
@@ -170,6 +170,12 @@
     },
     {
       "class": "8_hasim",
+      "saved": 5,
+      "failed": 0,
+      "hash": "user_registration"
+    },
+    {
+      "class": "9_test",
       "saved": 5,
       "failed": 0,
       "hash": "user_registration"

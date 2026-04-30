@@ -4,16 +4,7 @@ import { SidebarInset, SidebarProvider } from '@/Components/ui/sidebar';
 import { Head, useForm, Link } from '@inertiajs/react';
 import { Card } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
-import {
-    ArrowLeft,
-    UserPlus,
-    Mail,
-    Lock,
-    User,
-    Clock,
-    Save,
-    MapPin,
-} from 'lucide-react';
+import { ArrowLeft, Mail, Lock, User, Clock, Save, MapPin } from 'lucide-react';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import InputError from '@/Components/InputError';
@@ -76,33 +67,34 @@ export default function Edit({
                 <Head title={`Edit Karyawan: ${employee.name}`} />
 
                 <div className="flex flex-1 flex-col pb-8">
-                    <div className="flex flex-col gap-6 py-4 md:gap-8 md:py-8 px-4 lg:px-6">
-                        {/* Header Section */}
-                        <div className="flex items-center gap-4 max-w-2xl mx-auto w-full">
+                    <div className="flex flex-col gap-4 py-4 md:gap-8 md:py-8 px-4 lg:px-6">
+                        {/* ── Header ── */}
+                        <div className="flex items-center gap-3 max-w-2xl mx-auto w-full">
                             <Link href={route('karyawan.index')}>
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="rounded-full bg-white shadow-sm hover:bg-gray-50 h-10 w-10 md:h-12 md:w-12"
+                                    className="rounded-full bg-white shadow-sm hover:bg-gray-50 h-9 w-9 md:h-11 md:w-11 shrink-0"
                                 >
-                                    <ArrowLeft className="w-5 h-5 text-gray-600" />
+                                    <ArrowLeft className="w-4 h-4 text-gray-600" />
                                 </Button>
                             </Link>
                             <div>
-                                <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-900">
+                                <h1 className="text-xl md:text-3xl font-bold tracking-tight text-gray-900">
                                     Edit Karyawan
                                 </h1>
-                                <p className="text-sm md:text-base text-gray-500">
+                                <p className="text-xs md:text-sm text-gray-500">
                                     Perbarui data karyawan atau penugasan shift.
                                 </p>
                             </div>
                         </div>
 
-                        {/* Form Section */}
+                        {/* ── Form ── */}
                         <div className="max-w-2xl mx-auto w-full">
-                            <Card className="border-none shadow-sm rounded-2xl bg-white p-6 md:p-8">
-                                <form onSubmit={submit} className="space-y-6">
-                                    <div className="space-y-2">
+                            <Card className="border-none shadow-sm rounded-2xl bg-white p-5 md:p-8">
+                                <form onSubmit={submit} className="space-y-5">
+                                    {/* Nama */}
+                                    <div className="space-y-1.5">
                                         <Label
                                             htmlFor="name"
                                             className="text-sm font-semibold text-gray-700"
@@ -121,14 +113,15 @@ export default function Edit({
                                                     )
                                                 }
                                                 placeholder="Masukkan nama lengkap"
-                                                className="h-12 border-gray-100 bg-gray-50/50 pl-10 focus:ring-indigo-500 rounded-xl"
+                                                className="h-11 border-gray-100 bg-gray-50/50 pl-10 focus:ring-indigo-500 rounded-xl"
                                                 required
                                             />
                                         </div>
                                         <InputError message={errors.name} />
                                     </div>
 
-                                    <div className="space-y-2">
+                                    {/* Email */}
+                                    <div className="space-y-1.5">
                                         <Label
                                             htmlFor="email"
                                             className="text-sm font-semibold text-gray-700"
@@ -148,109 +141,101 @@ export default function Edit({
                                                     )
                                                 }
                                                 placeholder="email@perusahaan.com"
-                                                className="h-12 border-gray-100 bg-gray-50/50 pl-10 focus:ring-indigo-500 rounded-xl"
+                                                className="h-11 border-gray-100 bg-gray-50/50 pl-10 focus:ring-indigo-500 rounded-xl"
                                                 required
                                             />
                                         </div>
                                         <InputError message={errors.email} />
                                     </div>
 
-                                    <div className="grid gap-6 md:grid-cols-2">
-                                        <div className="space-y-2">
+                                    {/* Shift & Branch — stacked on mobile, 2-col on md */}
+                                    <div className="grid gap-4 md:grid-cols-2">
+                                        <div className="space-y-1.5">
                                             <Label
                                                 htmlFor="shift_id"
                                                 className="text-sm font-semibold text-gray-700"
                                             >
                                                 Penugasan Shift
                                             </Label>
-                                            <div className="relative">
-                                                <Select
-                                                    value={data.shift_id}
-                                                    onValueChange={(val) =>
-                                                        setData('shift_id', val)
-                                                    }
-                                                >
-                                                    <SelectTrigger className="h-12 border-gray-100 bg-gray-50/50 rounded-xl">
-                                                        <div className="flex items-center gap-2">
-                                                            <Clock className="w-4 h-4 text-gray-400" />
-                                                            <SelectValue placeholder="Pilih shift" />
-                                                        </div>
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {shifts.map((shift) => (
-                                                            <SelectItem
-                                                                key={shift.id}
-                                                                value={shift.id.toString()}
-                                                            >
-                                                                {shift.name} (
-                                                                {shift.start_time.substring(
-                                                                    0,
-                                                                    5,
-                                                                )}
-                                                                )
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
+                                            <Select
+                                                value={data.shift_id}
+                                                onValueChange={(val) =>
+                                                    setData('shift_id', val)
+                                                }
+                                            >
+                                                <SelectTrigger className="h-11 border-gray-100 bg-gray-50/50 rounded-xl">
+                                                    <div className="flex items-center gap-2">
+                                                        <Clock className="w-4 h-4 text-gray-400" />
+                                                        <SelectValue placeholder="Pilih shift" />
+                                                    </div>
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {shifts.map((shift) => (
+                                                        <SelectItem
+                                                            key={shift.id}
+                                                            value={shift.id.toString()}
+                                                        >
+                                                            {shift.name} (
+                                                            {shift.start_time.substring(
+                                                                0,
+                                                                5,
+                                                            )}
+                                                            )
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
                                             <InputError
                                                 message={errors.shift_id}
                                             />
                                         </div>
 
-                                        <div className="space-y-2">
+                                        <div className="space-y-1.5">
                                             <Label
                                                 htmlFor="branch_id"
                                                 className="text-sm font-semibold text-gray-700"
                                             >
                                                 Penugasan Cabang
                                             </Label>
-                                            <div className="relative">
-                                                <Select
-                                                    value={data.branch_id}
-                                                    onValueChange={(val) =>
-                                                        setData(
-                                                            'branch_id',
-                                                            val,
-                                                        )
-                                                    }
-                                                >
-                                                    <SelectTrigger className="h-12 border-gray-100 bg-gray-50/50 rounded-xl">
-                                                        <div className="flex items-center gap-2">
-                                                            <MapPin className="w-4 h-4 text-gray-400" />
-                                                            <SelectValue placeholder="Pilih cabang" />
-                                                        </div>
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {branches.map(
-                                                            (branch) => (
-                                                                <SelectItem
-                                                                    key={
-                                                                        branch.id
-                                                                    }
-                                                                    value={branch.id.toString()}
-                                                                >
-                                                                    {
-                                                                        branch.name
-                                                                    }
-                                                                </SelectItem>
-                                                            ),
-                                                        )}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
+                                            <Select
+                                                value={data.branch_id}
+                                                onValueChange={(val) =>
+                                                    setData('branch_id', val)
+                                                }
+                                            >
+                                                <SelectTrigger className="h-11 border-gray-100 bg-gray-50/50 rounded-xl">
+                                                    <div className="flex items-center gap-2">
+                                                        <MapPin className="w-4 h-4 text-gray-400" />
+                                                        <SelectValue placeholder="Pilih cabang" />
+                                                    </div>
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {branches.map((branch) => (
+                                                        <SelectItem
+                                                            key={branch.id}
+                                                            value={branch.id.toString()}
+                                                        >
+                                                            {branch.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
                                             <InputError
                                                 message={errors.branch_id}
                                             />
                                         </div>
                                     </div>
 
-                                    <div className="pt-4 border-t border-gray-50">
-                                        <h3 className="text-sm font-bold text-gray-900 mb-4">
-                                            Ganti Password (Opsional)
+                                    {/* Password Section */}
+                                    <div className="pt-4 border-t border-gray-100">
+                                        <h3 className="text-sm font-bold text-gray-900 mb-3">
+                                            Ganti Password{' '}
+                                            <span className="font-normal text-gray-400">
+                                                (Opsional)
+                                            </span>
                                         </h3>
-                                        <div className="grid gap-6 md:grid-cols-2">
-                                            <div className="space-y-2">
+                                        <div className="grid gap-4 md:grid-cols-2">
+                                            <div className="space-y-1.5">
                                                 <Label
                                                     htmlFor="password"
                                                     className="text-sm font-semibold text-gray-700"
@@ -270,7 +255,7 @@ export default function Edit({
                                                             )
                                                         }
                                                         placeholder="••••••••"
-                                                        className="h-12 border-gray-100 bg-gray-50/50 pl-10 focus:ring-indigo-500 rounded-xl"
+                                                        className="h-11 border-gray-100 bg-gray-50/50 pl-10 focus:ring-indigo-500 rounded-xl"
                                                     />
                                                 </div>
                                                 <InputError
@@ -278,7 +263,7 @@ export default function Edit({
                                                 />
                                             </div>
 
-                                            <div className="space-y-2">
+                                            <div className="space-y-1.5">
                                                 <Label
                                                     htmlFor="password_confirmation"
                                                     className="text-sm font-semibold text-gray-700"
@@ -300,7 +285,7 @@ export default function Edit({
                                                             )
                                                         }
                                                         placeholder="••••••••"
-                                                        className="h-12 border-gray-100 bg-gray-50/50 pl-10 focus:ring-indigo-500 rounded-xl"
+                                                        className="h-11 border-gray-100 bg-gray-50/50 pl-10 focus:ring-indigo-500 rounded-xl"
                                                     />
                                                 </div>
                                                 <InputError
@@ -312,13 +297,14 @@ export default function Edit({
                                         </div>
                                     </div>
 
-                                    <div className="flex flex-col gap-4 pt-4 md:flex-row">
+                                    {/* Submit Buttons */}
+                                    <div className="flex flex-col gap-3 pt-2 sm:flex-row">
                                         <Button
                                             type="submit"
                                             disabled={processing}
-                                            className="h-12 flex-1 rounded-xl bg-indigo-600 text-lg font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700"
+                                            className="h-11 flex-1 rounded-xl bg-indigo-600 font-bold shadow-md shadow-indigo-100 hover:bg-indigo-700 gap-2"
                                         >
-                                            <Save className="mr-2 w-5 h-5" />
+                                            <Save className="w-4 h-4" />
                                             Simpan Perubahan
                                         </Button>
                                         <Link
@@ -327,7 +313,7 @@ export default function Edit({
                                         >
                                             <Button
                                                 variant="outline"
-                                                className="h-12 w-full rounded-xl border-gray-200 text-lg font-semibold text-gray-600"
+                                                className="h-11 w-full rounded-xl border-gray-200 font-semibold text-gray-600"
                                             >
                                                 Batalkan
                                             </Button>

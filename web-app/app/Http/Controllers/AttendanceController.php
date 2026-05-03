@@ -188,8 +188,8 @@ class AttendanceController extends Controller
                         $lateMinutes = max(0, $lateMinutes);
                     }
                 }
-            } else {
-                // Sudah check-in hari ini → ini adalah check-out
+            } elseif (!$todayCheckOut) {
+                // Sudah check-in tapi belum check-out → ini adalah check-out
                 $type = 'check-out';
 
                 if ($user->shift) {
@@ -200,6 +200,13 @@ class AttendanceController extends Controller
                         $overtimeMinutes = max(0, $overtimeMinutes);
                     }
                 }
+            } else {
+                // Sudah check-in DAN sudah check-out hari ini
+                if (file_exists($tempPath)) unlink($tempPath);
+                return response()->json([
+                    'success' => false,
+                    'message' => "Anda sudah melakukan Check-in dan Check-out hari ini. Tidak dapat melakukan absensi lagi.",
+                ], 403);
             }
 
             // Simpan riwayat
@@ -218,6 +225,7 @@ class AttendanceController extends Controller
                 'attended_at' => $now,
                 'late_minutes' => $lateMinutes,
                 'overtime_minutes' => $overtimeMinutes,
+                'bbox' => $result['bbox'] ?? null,
             ]);
 
             $message = "Berhasil! Selamat bekerja, " . $user->name . ".";

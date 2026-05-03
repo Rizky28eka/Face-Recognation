@@ -59,19 +59,19 @@ const WORK_TYPE_OPTIONS: {
     {
         value: 'wfo',
         label: 'WFO (Kantor)',
-        icon: <Building2 className="w-4 h-4" />,
+        icon: <Building2 className="w-4 h-4 md:w-4 md:h-4" />,
         badgeClass: 'bg-blue-50 text-blue-700',
     },
     {
         value: 'wfh',
         label: 'WFH (Rumah)',
-        icon: <Home className="w-4 h-4" />,
+        icon: <Home className="w-4 h-4 md:w-4 md:h-4" />,
         badgeClass: 'bg-emerald-50 text-emerald-700',
     },
     {
         value: 'hybrid',
         label: 'Hybrid',
-        icon: <Shuffle className="w-4 h-4" />,
+        icon: <Shuffle className="w-4 h-4 md:w-4 md:h-4" />,
         badgeClass: 'bg-violet-50 text-violet-700',
     },
 ];
@@ -81,7 +81,7 @@ function WorkTypeBadge({ type }: { type: WorkType }) {
         WORK_TYPE_OPTIONS.find((o) => o.value === type) ?? WORK_TYPE_OPTIONS[0];
     return (
         <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${opt.badgeClass}`}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] md:text-xs font-bold ${opt.badgeClass}`}
         >
             {opt.icon}
             {opt.label}
@@ -138,6 +138,9 @@ export default function Shifts({ shifts }: Props) {
             color: shift.color,
             work_type: shift.work_type,
         });
+
+        // Scroll to form on mobile
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const handleDelete = (id: number) => {
@@ -155,64 +158,71 @@ export default function Shifts({ shifts }: Props) {
                 <SiteHeader />
                 <Head title="Manajemen Shift" />
 
-                <div className="flex flex-1 flex-col p-4 lg:p-6 space-y-6">
+                <div className="flex flex-1 flex-col p-4 lg:p-6 space-y-4 md:space-y-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+                            <h1 className="text-xl md:text-3xl font-bold tracking-tight text-gray-900">
                                 Manajemen Shift
                             </h1>
-                            <p className="text-gray-500">
+                            <p className="text-xs md:text-sm text-gray-500 mt-1">
                                 Atur jadwal dan tipe kerja fleksibel untuk
                                 karyawan Anda.
                             </p>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                         {/* Form Section */}
-                        <Card className="lg:col-span-1 border-none shadow-xl h-fit sticky top-6">
-                            <CardHeader className="bg-gradient-to-br from-indigo-600 to-violet-700 text-white rounded-t-xl">
-                                <CardTitle className="flex items-center gap-2">
+                        <Card className="lg:col-span-1 border-none shadow-sm md:shadow-xl h-fit lg:sticky lg:top-6 bg-white">
+                            <CardHeader className="bg-gradient-to-br from-indigo-600 to-violet-700 text-white rounded-t-xl p-5 md:p-6">
+                                <CardTitle className="flex items-center gap-2 text-base md:text-lg">
                                     {isEditing ? (
-                                        <Edit2 className="w-5 h-5" />
+                                        <Edit2 className="w-4 h-4 md:w-5 md:h-5" />
                                     ) : (
-                                        <Plus className="w-5 h-5" />
+                                        <Plus className="w-4 h-4 md:w-5 md:h-5" />
                                     )}
                                     {isEditing
                                         ? 'Edit Shift'
                                         : 'Tambah Shift Baru'}
                                 </CardTitle>
-                                <CardDescription className="text-indigo-100">
+                                <CardDescription className="text-indigo-100 text-xs md:text-sm">
                                     Tentukan nama, jam kerja, dan tipe shift.
                                 </CardDescription>
                             </CardHeader>
-                            <CardContent className="p-6">
+                            <CardContent className="p-5 md:p-6">
                                 <form
                                     onSubmit={handleSubmit}
-                                    className="space-y-5"
+                                    className="space-y-4 md:space-y-5"
                                 >
                                     {/* Nama Shift */}
-                                    <div className="space-y-2">
-                                        <Label htmlFor="name">Nama Shift</Label>
+                                    <div className="space-y-1.5 md:space-y-2">
+                                        <Label
+                                            htmlFor="name"
+                                            className="text-xs md:text-sm"
+                                        >
+                                            Nama Shift
+                                        </Label>
                                         <Input
                                             id="name"
-                                            placeholder="Contoh: Pagi, Malam, atau Weekend"
+                                            placeholder="Contoh: Pagi, Malam..."
                                             value={data.name}
                                             onChange={(e) =>
                                                 setData('name', e.target.value)
                                             }
-                                            className="h-12 border-gray-200"
+                                            className="h-11 md:h-12 border-gray-200"
                                         />
                                         {errors.name && (
-                                            <p className="text-xs text-red-500">
+                                            <p className="text-[10px] md:text-xs text-red-500">
                                                 {errors.name}
                                             </p>
                                         )}
                                     </div>
 
                                     {/* Tipe Kerja */}
-                                    <div className="space-y-2">
-                                        <Label>Tipe Kerja</Label>
+                                    <div className="space-y-1.5 md:space-y-2">
+                                        <Label className="text-xs md:text-sm">
+                                            Tipe Kerja
+                                        </Label>
                                         <div className="grid grid-cols-3 gap-2">
                                             {WORK_TYPE_OPTIONS.map((opt) => (
                                                 <button
@@ -224,7 +234,7 @@ export default function Shifts({ shifts }: Props) {
                                                             opt.value,
                                                         )
                                                     }
-                                                    className={`flex flex-col items-center gap-1 p-3 rounded-xl border-2 text-xs font-bold transition-all ${
+                                                    className={`flex flex-col items-center gap-1 p-2 md:p-3 rounded-xl border-2 text-[10px] md:text-xs font-bold transition-all ${
                                                         data.work_type ===
                                                         opt.value
                                                             ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
@@ -232,21 +242,25 @@ export default function Shifts({ shifts }: Props) {
                                                     }`}
                                                 >
                                                     {opt.icon}
-                                                    {opt.value.toUpperCase()}
+                                                    <span className="truncate w-full text-center">
+                                                        {opt.value.toUpperCase()}
+                                                    </span>
                                                 </button>
                                             ))}
                                         </div>
                                         {errors.work_type && (
-                                            <p className="text-xs text-red-500">
+                                            <p className="text-[10px] md:text-xs text-red-500">
                                                 {errors.work_type}
                                             </p>
                                         )}
                                     </div>
 
                                     {/* Jam */}
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label>Jam Mulai</Label>
+                                    <div className="grid grid-cols-2 gap-3 md:gap-4">
+                                        <div className="space-y-1.5 md:space-y-2">
+                                            <Label className="text-xs md:text-sm">
+                                                Jam Mulai
+                                            </Label>
                                             <div className="relative">
                                                 <Clock className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
                                                 <Input
@@ -258,12 +272,14 @@ export default function Shifts({ shifts }: Props) {
                                                             e.target.value,
                                                         )
                                                     }
-                                                    className="pl-10 h-12 border-gray-200"
+                                                    className="pl-9 h-11 md:h-12 border-gray-200"
                                                 />
                                             </div>
                                         </div>
-                                        <div className="space-y-2">
-                                            <Label>Jam Selesai</Label>
+                                        <div className="space-y-1.5 md:space-y-2">
+                                            <Label className="text-xs md:text-sm">
+                                                Jam Selesai
+                                            </Label>
                                             <div className="relative">
                                                 <Clock className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
                                                 <Input
@@ -275,19 +291,19 @@ export default function Shifts({ shifts }: Props) {
                                                             e.target.value,
                                                         )
                                                     }
-                                                    className="pl-10 h-12 border-gray-200"
+                                                    className="pl-9 h-11 md:h-12 border-gray-200"
                                                 />
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Warna */}
-                                    <div className="space-y-2">
-                                        <Label className="flex items-center gap-2">
-                                            <Palette className="w-4 h-4" />
+                                    <div className="space-y-1.5 md:space-y-2">
+                                        <Label className="flex items-center gap-2 text-xs md:text-sm">
+                                            <Palette className="w-3.5 h-3.5 md:w-4 md:h-4" />
                                             Warna Label
                                         </Label>
-                                        <div className="flex gap-3">
+                                        <div className="flex gap-2 md:gap-3">
                                             <Input
                                                 type="color"
                                                 value={data.color}
@@ -297,7 +313,7 @@ export default function Shifts({ shifts }: Props) {
                                                         e.target.value,
                                                     )
                                                 }
-                                                className="w-16 h-12 p-1 border-gray-200 cursor-pointer"
+                                                className="w-14 h-11 md:w-16 md:h-12 p-1 border-gray-200 cursor-pointer"
                                             />
                                             <Input
                                                 value={data.color}
@@ -307,20 +323,20 @@ export default function Shifts({ shifts }: Props) {
                                                         e.target.value,
                                                     )
                                                 }
-                                                className="h-12 border-gray-200 font-mono"
+                                                className="h-11 md:h-12 border-gray-200 font-mono text-sm uppercase"
                                             />
                                         </div>
                                     </div>
 
-                                    <div className="flex gap-3 pt-4">
+                                    <div className="flex flex-col sm:flex-row gap-2 md:gap-3 pt-3 md:pt-4">
                                         <Button
                                             type="submit"
                                             disabled={processing}
-                                            className="flex-1 h-12 bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200"
+                                            className="flex-1 h-11 md:h-12 bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200"
                                         >
                                             <Save className="w-4 h-4 mr-2" />
                                             {isEditing
-                                                ? 'Simpan Perubahan'
+                                                ? 'Simpan'
                                                 : 'Buat Shift'}
                                         </Button>
                                         {isEditing && (
@@ -331,9 +347,12 @@ export default function Shifts({ shifts }: Props) {
                                                     setIsEditing(null);
                                                     reset();
                                                 }}
-                                                className="h-12 border-2"
+                                                className="h-11 md:h-12 border-2 sm:w-16 flex-shrink-0"
                                             >
                                                 <X className="w-4 h-4" />
+                                                <span className="sm:hidden ml-2">
+                                                    Batal
+                                                </span>
                                             </Button>
                                         )}
                                     </div>
@@ -343,11 +362,12 @@ export default function Shifts({ shifts }: Props) {
 
                         {/* List Section */}
                         <div className="lg:col-span-2">
-                            <Card className="border-none shadow-xl overflow-hidden bg-white">
+                            {/* Desktop Table View */}
+                            <Card className="hidden md:block border-none shadow-sm md:shadow-xl overflow-hidden bg-white">
                                 <Table>
                                     <TableHeader>
                                         <TableRow className="bg-gray-50/50">
-                                            <TableHead className="font-bold py-4">
+                                            <TableHead className="font-bold py-4 pl-6">
                                                 Warna
                                             </TableHead>
                                             <TableHead className="font-bold">
@@ -453,6 +473,90 @@ export default function Shifts({ shifts }: Props) {
                                     </TableBody>
                                 </Table>
                             </Card>
+
+                            {/* Mobile List View */}
+                            <div className="flex flex-col gap-3 md:hidden">
+                                {shifts.length > 0 ? (
+                                    shifts.map((shift) => (
+                                        <Card
+                                            key={shift.id}
+                                            className="border-none shadow-sm bg-white overflow-hidden rounded-2xl relative"
+                                        >
+                                            <div
+                                                className="absolute left-0 top-0 bottom-0 w-2"
+                                                style={{
+                                                    backgroundColor:
+                                                        shift.color,
+                                                }}
+                                            />
+                                            <CardContent className="p-4 pl-6">
+                                                <div className="flex justify-between items-start mb-3">
+                                                    <div>
+                                                        <h3 className="font-bold text-gray-900">
+                                                            {shift.name}
+                                                        </h3>
+                                                        <p className="text-[10px] text-gray-400 font-mono mt-0.5 uppercase tracking-wider">
+                                                            {shift.color}
+                                                        </p>
+                                                    </div>
+                                                    <WorkTypeBadge
+                                                        type={shift.work_type}
+                                                    />
+                                                </div>
+
+                                                <div className="flex items-center gap-2 mb-4 bg-gray-50/50 rounded-xl p-3">
+                                                    <Clock className="w-4 h-4 text-indigo-500 shrink-0" />
+                                                    <p className="text-sm font-bold text-gray-700">
+                                                        {shift.start_time.substring(
+                                                            0,
+                                                            5,
+                                                        )}{' '}
+                                                        -{' '}
+                                                        {shift.end_time.substring(
+                                                            0,
+                                                            5,
+                                                        )}
+                                                    </p>
+                                                </div>
+
+                                                <div className="flex gap-2">
+                                                    <Button
+                                                        variant="outline"
+                                                        onClick={() =>
+                                                            handleEdit(shift)
+                                                        }
+                                                        className="flex-1 rounded-xl h-9 border-indigo-100 text-indigo-600 hover:bg-indigo-50 font-bold text-xs"
+                                                    >
+                                                        <Edit2 className="w-3.5 h-3.5 mr-1.5" />
+                                                        Edit
+                                                    </Button>
+                                                    <Button
+                                                        variant="outline"
+                                                        onClick={() =>
+                                                            handleDelete(
+                                                                shift.id,
+                                                            )
+                                                        }
+                                                        className="flex-1 rounded-xl h-9 border-red-100 text-red-600 hover:bg-red-50 font-bold text-xs"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+                                                        Hapus
+                                                    </Button>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    ))
+                                ) : (
+                                    <Card className="border-dashed border-2 bg-gray-50/50 shadow-none">
+                                        <CardContent className="flex flex-col items-center justify-center p-8 text-center text-gray-400">
+                                            <Clock className="w-10 h-10 text-gray-300 mb-3" />
+                                            <p className="text-sm">
+                                                Belum ada shift terdaftar.
+                                            </p>
+                                        </CardContent>
+                                    </Card>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

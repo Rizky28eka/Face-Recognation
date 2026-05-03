@@ -11,6 +11,9 @@ use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\TenantController;
 use App\Http\Controllers\AIStatusController;
 use App\Http\Controllers\SystemSettingController;
+use App\Models\Tenant;
+use App\Models\User;
+use App\Models\Attendance;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -21,6 +24,11 @@ Route::get('/', function () {
         'canRegister' => Route::has('register'),
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
+        'stats' => [
+            'tenants' => Tenant::count(),
+            'users' => User::count(),
+            'attendances' => Attendance::count(),
+        ]
     ]);
 });
 
@@ -83,6 +91,7 @@ Route::middleware(['auth', 'verified', 'superadmin'])->group(function () {
     Route::delete('/tenants/{tenant}', [TenantController::class, 'destroy'])->name('tenants.destroy');
 
     Route::get('/ai-status', [AIStatusController::class, 'index'])->name('ai.status');
+    Route::post('/ai-settings', [AIStatusController::class, 'updateSettings'])->name('ai.settings.update');
 
     Route::get('/system/settings', [SystemSettingController::class, 'index'])->name('system.settings');
     Route::patch('/system/settings', [SystemSettingController::class, 'update'])->name('system.settings.update');

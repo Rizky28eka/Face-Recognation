@@ -6,6 +6,7 @@ use App\Models\Attendance;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Leave;
+use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -46,6 +47,7 @@ class DashboardController extends Controller
                 ['label' => 'AI Service Status', 'value' => 'Ready', 'icon' => 'Cpu'],
             ],
             'recentData' => Tenant::withCount(['users', 'attendances'])->latest()->limit(5)->get(),
+            'auditLogs' => AuditLog::with('user')->latest()->limit(10)->get(),
         ];
     }
 

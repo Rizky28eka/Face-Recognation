@@ -25,6 +25,12 @@ class Attendance extends Model
         'attended_at',
         'late_minutes',
         'overtime_minutes',
+        'bbox',
+    ];
+
+    protected $casts = [
+        'bbox' => 'array',
+        'attended_at' => 'datetime',
     ];
 
     /**

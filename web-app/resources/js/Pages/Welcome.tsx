@@ -16,9 +16,18 @@ import {
 interface WelcomeProps {
     canLogin: boolean;
     canRegister: boolean;
+    stats: {
+        tenants: number;
+        users: number;
+        attendances: number;
+    };
 }
 
-export default function Welcome({ canLogin, canRegister }: WelcomeProps) {
+export default function Welcome({
+    canLogin,
+    canRegister,
+    stats,
+}: WelcomeProps) {
     const user = usePage().props.auth.user;
 
     return (
@@ -219,7 +228,9 @@ export default function Welcome({ canLogin, canRegister }: WelcomeProps) {
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
                             <div className="space-y-2">
                                 <p className="text-4xl md:text-5xl font-black">
-                                    10k+
+                                    {stats.users > 1000
+                                        ? `${(stats.users / 1000).toFixed(1)}k+`
+                                        : stats.users}
                                 </p>
                                 <p className="text-indigo-200 font-medium">
                                     Pengguna Aktif
@@ -227,7 +238,7 @@ export default function Welcome({ canLogin, canRegister }: WelcomeProps) {
                             </div>
                             <div className="space-y-2">
                                 <p className="text-4xl md:text-5xl font-black">
-                                    500+
+                                    {stats.tenants}
                                 </p>
                                 <p className="text-indigo-200 font-medium">
                                     Perusahaan
@@ -235,7 +246,9 @@ export default function Welcome({ canLogin, canRegister }: WelcomeProps) {
                             </div>
                             <div className="space-y-2">
                                 <p className="text-4xl md:text-5xl font-black">
-                                    99%
+                                    {stats.attendances > 1000
+                                        ? `${(stats.attendances / 1000).toFixed(1)}k+`
+                                        : stats.attendances}
                                 </p>
                                 <p className="text-indigo-200 font-medium">
                                     Kepuasan

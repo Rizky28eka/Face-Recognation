@@ -43,6 +43,8 @@ class FaceDetectionService:
         if len(faces) == 0:
             faces = self.face_cascade.detectMultiScale(gray, scaleFactor=1.05, minNeighbors=3, minSize=(30, 30))
 
+        if isinstance(faces, np.ndarray):
+            return faces.tolist()
         return faces
 
     def crop_face(self, image: np.ndarray, box):

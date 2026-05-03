@@ -33,3 +33,33 @@ def get_settings():
 
 # Global settings instance
 settings = get_settings()
+
+def update_settings(updates: dict):
+    global settings
+    env_path = ".env"
+    
+    # Read existing env vars
+    env_vars = {}
+    if os.path.exists(env_path):
+        with open(env_path, "r") as f:
+            for line in f:
+                if "=" in line and not line.strip().startswith("#"):
+                    k, v = line.strip().split("=", 1)
+                    env_vars[k] = v
+
+    # Update with new values
+    for k, v in updates.items():
+        env_vars[k.upper()] = str(v)
+        # Update current settings object dynamically
+        if hasattr(settings, k.upper()):
+            setattr(settings, k.upper(), v)
+
+    # Write back to .env
+    with open(env_path, "w") as f:
+        for k, v in env_vars.items():
+            f.write(f"{k}={v}\n")
+    
+    # Clear cache so next get_settings() gets new values
+    get_settings.cache_clear()
+    
+    return settings

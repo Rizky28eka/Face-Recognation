@@ -83,6 +83,8 @@ clear:
 	rm -rf $(AI_DIR)/dataset/val/*
 	rm -rf $(AI_DIR)/dataset/test/*
 	rm -rf $(AI_DIR)/dataset/logs/*.log
+	rm -f $(AI_DIR)/dataset/inference_logs.json
+	rm -f $(AI_DIR)/dataset/metadata.json
 	rm -rf $(AI_DIR)/models/*.clf
 	@echo "🧹 Membersihkan foto & logs Storage Laravel..."
 	rm -rf $(WEB_DIR)/storage/app/public/faces/*

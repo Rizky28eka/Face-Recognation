@@ -111,4 +111,18 @@ class FaceRecognitionService
             ];
         }
     }
+
+    /**
+     * Update AI Service Hyperparameters.
+     */
+    public function updateSettings($data)
+    {
+        try {
+            $response = Http::asForm()->post("{$this->baseUrl}/settings", $data);
+            return $response->json();
+        } catch (\Exception $e) {
+            Log::error("AI Service Error (Settings): " . $e->getMessage());
+            return ['status' => 'error', 'message' => 'Connection to AI Service failed.'];
+        }
+    }
 }

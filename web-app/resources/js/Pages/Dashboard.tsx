@@ -8,6 +8,7 @@ import AttendanceChart from './Dashboard/AttendanceChart';
 import { Button } from '@/Components/ui/button';
 import { Camera } from 'lucide-react';
 import { Link, usePage } from '@inertiajs/react';
+import { PageProps } from '@/types';
 
 interface Stat {
     label: string;
@@ -19,6 +20,7 @@ interface DashboardProps {
     role: 'superadmin' | 'owner' | 'karyawan';
     stats: Stat[];
     recentData: Array<Record<string, unknown>>;
+    auditLogs?: Array<Record<string, unknown>>;
     chartData?: { day: string; count: number }[];
 }
 
@@ -34,11 +36,10 @@ export default function Dashboard({
     role,
     stats,
     recentData,
+    auditLogs,
     chartData,
 }: DashboardProps) {
-    const { auth } = usePage<{
-        auth: { user: { name: string } };
-    }>().props;
+    const { auth } = usePage<PageProps>().props;
 
     const userName = auth?.user?.name ?? role;
 
@@ -94,7 +95,11 @@ export default function Dashboard({
                         )}
 
                         {/* Recent Activity */}
-                        <RecentActivity role={role} data={recentData} />
+                        <RecentActivity
+                            role={role}
+                            data={recentData}
+                            auditLogs={auditLogs}
+                        />
                     </div>
                 </div>
             </SidebarInset>

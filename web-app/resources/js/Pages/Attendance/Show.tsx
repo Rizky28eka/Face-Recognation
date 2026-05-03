@@ -13,8 +13,10 @@ import {
     Globe,
     Cpu,
     Calendar,
+    Scan,
 } from 'lucide-react';
 import { Badge } from '@/Components/ui/badge';
+import { useState } from 'react';
 
 interface User {
     id: number;
@@ -35,6 +37,7 @@ interface Attendance {
     ip_address?: string;
     network_info?: string;
     created_at: string;
+    bbox: number[] | null;
     branch?: {
         id: number;
         name: string;
@@ -46,6 +49,34 @@ interface Props {
 }
 
 export default function Show({ attendance }: Props) {
+    const [imgSize, setImgSize] = useState({ width: 0, height: 0 });
+
+    const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+        const { naturalWidth, naturalHeight } = e.currentTarget;
+        setImgSize({ width: naturalWidth, height: naturalHeight });
+    };
+
+    const getBBoxColor = (type: string) => {
+        switch (type.toLowerCase()) {
+            case 'check-in':
+                return 'emerald'; // Emerald for check-in
+            case 'check-out':
+                return 'blue'; // Blue for check-out
+            default:
+                return 'amber';
+        }
+    };
+
+    const colorScheme = getBBoxColor(attendance.type);
+    const borderColor =
+        colorScheme === 'emerald' ? 'border-emerald-400' : 'border-blue-400';
+    const bgColor =
+        colorScheme === 'emerald' ? 'bg-emerald-500' : 'bg-blue-500';
+    const shadowColor =
+        colorScheme === 'emerald'
+            ? 'shadow-[0_0_15px_rgba(52,211,153,0.6)]'
+            : 'shadow-[0_0_15px_rgba(59,130,246,0.6)]';
+
     return (
         <SidebarProvider>
             <AppSidebar variant="inset" />
@@ -89,7 +120,40 @@ export default function Show({ attendance }: Props) {
                                                 src={`/storage/${attendance.image_path}`}
                                                 alt="Verification Scan"
                                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                onLoad={handleImageLoad}
                                             />
+
+                                            {/* Visual Bounding Box Overlay */}
+                                            {attendance.bbox &&
+                                                imgSize.width > 0 && (
+                                                    <div
+                                                        className={`absolute border-2 ${borderColor} ${shadowColor} rounded-sm pointer-events-none`}
+                                                        style={{
+                                                            left: `${(attendance.bbox[0] / imgSize.width) * 100}%`,
+                                                            top: `${(attendance.bbox[1] / imgSize.height) * 100}%`,
+                                                            width: `${(attendance.bbox[2] / imgSize.width) * 100}%`,
+                                                            height: `${(attendance.bbox[3] / imgSize.height) * 100}%`,
+                                                        }}
+                                                    >
+                                                        <div
+                                                            className={`absolute -top-7 left-0 ${bgColor} text-white text-[8px] md:text-[10px] font-bold px-1.5 py-0.5 rounded shadow-lg flex flex-col whitespace-nowrap`}
+                                                        >
+                                                            <div className="flex items-center gap-1">
+                                                                <Scan className="w-2.5 h-2.5" />
+                                                                {attendance.type.toUpperCase()}
+                                                            </div>
+                                                            <div className="text-[7px] md:text-[9px] opacity-90 border-t border-white/20 mt-0.5 pt-0.5">
+                                                                {attendance.user.name} -{' '}
+                                                                {Math.round(
+                                                                    attendance.confidence *
+                                                                        100,
+                                                                )}
+                                                                %
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+
                                             <div className="absolute inset-x-0 bottom-0 p-3 md:p-4 bg-gradient-to-t from-black/60 to-transparent">
                                                 <div className="flex items-center gap-2 text-white">
                                                     <Shield className="w-3.5 h-3.5 md:w-4 md:h-4 text-emerald-400" />
@@ -99,6 +163,7 @@ export default function Show({ attendance }: Props) {
                                                 </div>
                                             </div>
                                         </div>
+
                                         <div className="mt-4 p-3.5 bg-indigo-50 rounded-2xl border border-indigo-100/50">
                                             <div className="flex justify-between items-center mb-1.5">
                                                 <span className="text-[10px] md:text-xs font-bold text-indigo-400 uppercase">

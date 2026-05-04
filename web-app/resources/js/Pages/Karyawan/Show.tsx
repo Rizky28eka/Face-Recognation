@@ -16,6 +16,7 @@ import {
     Home,
     Activity,
     Edit2,
+    Download,
 } from 'lucide-react';
 import { Switch } from '@/Components/ui/switch';
 import { router } from '@inertiajs/react';
@@ -98,24 +99,36 @@ export default function Show({ employee, recentAttendances = [] }: Props) {
                 <div className="flex flex-1 flex-col pb-8">
                     <div className="flex flex-col gap-4 py-4 md:gap-8 md:py-8 px-4 lg:px-6">
                         {/* ── Header ── */}
-                        <div className="flex items-center gap-3 max-w-5xl mx-auto w-full">
-                            <Link href={route('karyawan.index')}>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="rounded-full bg-white shadow-sm hover:bg-gray-50 h-9 w-9 md:h-11 md:w-11 shrink-0"
-                                >
-                                    <ArrowLeft className="w-4 h-4 text-gray-600" />
-                                </Button>
-                            </Link>
-                            <div className="min-w-0">
-                                <h1 className="text-xl md:text-3xl font-bold tracking-tight text-gray-900 truncate">
-                                    Detail Karyawan
-                                </h1>
-                                <p className="text-xs md:text-sm text-gray-500">
-                                    Informasi lengkap profil karyawan.
-                                </p>
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 max-w-5xl mx-auto w-full">
+                            <div className="flex items-center gap-3">
+                                <Link href={route('karyawan.index')}>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="rounded-full bg-white shadow-sm hover:bg-gray-50 h-9 w-9 md:h-11 md:w-11 shrink-0"
+                                    >
+                                        <ArrowLeft className="w-4 h-4 text-gray-600" />
+                                    </Button>
+                                </Link>
+                                <div className="min-w-0">
+                                    <h1 className="text-xl md:text-3xl font-bold tracking-tight text-gray-900 truncate">
+                                        Detail Karyawan
+                                    </h1>
+                                    <p className="text-xs md:text-sm text-gray-500">
+                                        Informasi lengkap profil karyawan.
+                                    </p>
+                                </div>
                             </div>
+
+                            <a
+                                href={route('karyawan.download', employee.id)}
+                                target="_blank"
+                            >
+                                <Button className="h-10 rounded-xl bg-white text-indigo-600 border-2 border-indigo-100 hover:bg-indigo-50 font-bold shadow-sm gap-2">
+                                    <Download className="w-4 h-4" />
+                                    Download PDF
+                                </Button>
+                            </a>
                         </div>
 
                         {/* ── Profile Grid ── */}

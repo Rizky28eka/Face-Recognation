@@ -1,0 +1,65 @@
+services:
+  # Laravel Application
+  app:
+    build:
+      context: ./web-app
+      dockerfile: Dockerfile
+    container_name: face-log-app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./web-app:/var/www
+    environment:
+      - DB_CONNECTION=pgsql
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_DATABASE=face_recognition_db
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=password
+      - AI_SERVICE_URL=http://ai-service:8088/api/v1
+    depends_on:
+      - db
+
+  # Nginx Web Server
+  nginx:
+    image: nginx:alpine
+    container_name: face-log-nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./web-app:/var/www
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+    depends_on:
+      - app
+
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: face-log-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: face_recognition_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  # AI Face Recognition Service
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: face-log-ai
+    restart: unless-stopped
+    ports:
+      - "8088:8088"
+    volumes:
+      - ./ai-service:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+
+volumes:
+  pgdata:

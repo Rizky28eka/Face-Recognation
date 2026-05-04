@@ -8,4 +8,4 @@ python-multipart
 requests
 python-dotenv
 pydantic-settings
-psutilpsutil
+psutil

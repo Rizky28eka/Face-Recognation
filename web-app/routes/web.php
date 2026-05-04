@@ -56,6 +56,7 @@ Route::middleware(['auth', 'verified', 'face_registered'])->group(function () {
     Route::patch('/karyawan/{user}', [KaryawanController::class, 'update'])->name('karyawan.update');
     Route::delete('/karyawan/{user}', [KaryawanController::class, 'destroy'])->name('karyawan.destroy');
     Route::post('/karyawan/{user}/toggle-wfh', [KaryawanController::class, 'toggleWfh'])->name('karyawan.toggle-wfh');
+    Route::get('/karyawan/{user}/download', [KaryawanController::class, 'download'])->name('karyawan.download');
 
     // Settings Routes
     Route::get('/settings/branches', [BranchController::class, 'index'])->name('settings.branches');

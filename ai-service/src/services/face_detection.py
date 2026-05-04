@@ -23,17 +23,17 @@ class FaceDetectionService:
         """
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         
-        # 1. Try frontal face detection
-        faces = self.face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+        # 1. Try frontal face detection (Refined scaleFactor and minNeighbors for better accuracy)
+        faces = self.face_cascade.detectMultiScale(gray, scaleFactor=1.05, minNeighbors=6, minSize=(30, 30))
         
         # 2. Try profile face detection (for Left/Right liveness movements)
         if len(faces) == 0:
-            faces = self.profile_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+            faces = self.profile_cascade.detectMultiScale(gray, scaleFactor=1.05, minNeighbors=6, minSize=(30, 30))
             
             # Profile cascade usually detects faces looking to the right. Flip image to detect looking to the left.
             if len(faces) == 0:
                 flipped_gray = cv2.flip(gray, 1)
-                faces_flipped = self.profile_cascade.detectMultiScale(flipped_gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+                faces_flipped = self.profile_cascade.detectMultiScale(flipped_gray, scaleFactor=1.05, minNeighbors=6, minSize=(30, 30))
                 if len(faces_flipped) > 0:
                     x, y, w, h = faces_flipped[0]
                     # Map coordinates back to original image
@@ -53,3 +53,20 @@ class FaceDetectionService:
         """
         x, y, w, h = box
         return image[y:y+h, x:x+w]
+
+    def get_padded_box(self, box, image_shape, padding=0.1):
+        """
+        Expand the bounding box by a percentage of its size while staying within image boundaries.
+        """
+        x, y, w, h = box
+        img_h, img_w = image_shape[:2]
+
+        pad_w = int(w * padding)
+        pad_h = int(h * padding)
+
+        new_x = max(0, x - pad_w)
+        new_y = max(0, y - pad_h)
+        new_w = min(img_w - new_x, w + 2 * pad_w)
+        new_h = min(img_h - new_y, h + 2 * pad_h)
+
+        return [new_x, new_y, new_w, new_h]

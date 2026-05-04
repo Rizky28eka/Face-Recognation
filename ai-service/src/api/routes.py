@@ -13,6 +13,7 @@ from src.services.training import TrainingService
 from src.services.logger import InferenceLogger
 from src.utils.config import settings, update_settings
 import psutil
+import base64
 
 router = APIRouter()
 
@@ -281,11 +282,60 @@ async def predict_face(file: UploadFile = File(...)):
         print(f"[DEBUG ROUTES] Final Match -> Name: {name}, Confidence: {confidence:.4f}, Dist: {avg_distance:.2f}")
         
         if confidence >= settings.RECOGNITION_THRESHOLD:
+            # Create annotated image for storage
+            annotated_image = image.copy()
+            
+            # Use padded box for visualization
+            padded_box = face_detector.get_padded_box(face_box, image.shape, padding=0.15)
+            x, y, w, h = padded_box
+            
+            # Draw bounding box
+            color = (0, 255, 0) # Green for recognized
+            cv2.rectangle(annotated_image, (x, y), (x + w, y + h), color, 3)
+            
+            # Draw label (ensure it's on screen)
+            label = f"{name} ({confidence:.2f})"
+            label_y = y - 10 if y - 10 > 20 else y + 25
+            cv2.putText(annotated_image, label, (x, label_y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+            
+            # Encode to base64
+            _, buffer = cv2.imencode('.jpg', annotated_image)
+            annotated_base64 = base64.b64encode(buffer).decode('utf-8')
+
             inference_logger.log(name, round(confidence, 2), "recognized", det_time, ext_time, pre_time, face_box)
-            return {"name": name, "confidence": round(confidence, 2), "status": "recognized", "bbox": face_box}
+            return {
+                "name": name, 
+                "confidence": round(confidence, 2), 
+                "status": "recognized", 
+                "bbox": face_box,
+                "annotated_image": annotated_base64
+            }
         else:
+            # Create annotated image for unknown
+            annotated_image = image.copy()
+            
+            # Use padded box for visualization
+            padded_box = face_detector.get_padded_box(face_box, image.shape, padding=0.15)
+            x, y, w, h = padded_box
+            
+            color = (0, 0, 255) # Red for unrecognized
+            cv2.rectangle(annotated_image, (x, y), (x + w, y + h), color, 3)
+            
+            # Draw label (ensure it's on screen)
+            label_y = y - 10 if y - 10 > 20 else y + 25
+            cv2.putText(annotated_image, "Unknown", (x, label_y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+            
+            _, buffer = cv2.imencode('.jpg', annotated_image)
+            annotated_base64 = base64.b64encode(buffer).decode('utf-8')
+
             inference_logger.log("unknown", round(confidence, 2), "unrecognized", det_time, ext_time, pre_time, face_box)
-            return {"name": "unknown", "confidence": round(confidence, 2), "status": "unrecognized", "bbox": face_box}
+            return {
+                "name": "unknown", 
+                "confidence": round(confidence, 2), 
+                "status": "unrecognized", 
+                "bbox": face_box,
+                "annotated_image": annotated_base64
+            }
             
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

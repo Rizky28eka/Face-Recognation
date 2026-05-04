@@ -1,0 +1,14 @@
+venv/
+__pycache__/
+*.pyc
+.env
+.git
+dataset/train/*
+dataset/val/*
+dataset/test/*
+dataset/logs/*.log
+dataset/inference_logs.json
+dataset/metadata.json
+models/*.clf
+.vscode/
+.idea/

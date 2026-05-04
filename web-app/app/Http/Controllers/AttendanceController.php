@@ -154,10 +154,6 @@ class AttendanceController extends Controller
                 ], 400);
             }
 
-            // Simpan foto permanen
-            $finalPath = 'attendances/' . $imageName;
-            Storage::disk('public')->put($finalPath, base64_decode($image));
-
             // Hitung Tipe Absensi & Keterlambatan
             $now = Carbon::now();
             $today = $now->toDateString();
@@ -208,6 +204,16 @@ class AttendanceController extends Controller
                     'message' => "Anda sudah melakukan Check-in dan Check-out hari ini. Tidak dapat melakukan absensi lagi.",
                 ], 403);
             }
+            
+            // Simpan foto permanen (Utamakan foto yang ada bounding box dari AI)
+            // Folder: attendances/{user_id}/{check_in|check_out}/{filename}
+            $folderType = str_replace('-', '_', $type);
+            $finalPath = "attendances/{$user->id}/{$folderType}/{$imageName}";
+            $saveImage = isset($result['annotated_image']) 
+                ? base64_decode($result['annotated_image']) 
+                : base64_decode($image);
+                
+            Storage::disk('public')->put($finalPath, $saveImage);
 
             // Simpan riwayat
             Attendance::create([

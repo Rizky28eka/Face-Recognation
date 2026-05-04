@@ -52,7 +52,7 @@ class ProfileController extends Controller
         $image = str_replace(' ', '+', $image);
         $imageName = 'face_' . $user->id . '_' . time() . '_' . $request->index . '.jpg';
         
-        $path = 'faces/' . $imageName;
+        $path = "faces/{$user->id}/register/" . $imageName;
         Storage::disk('public')->put($path, base64_decode($image));
 
         // Register to AI Service (Gunakan format ID_Name untuk mencegah nama kembar)

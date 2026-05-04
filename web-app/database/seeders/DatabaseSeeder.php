@@ -77,12 +77,12 @@ class DatabaseSeeder extends Seeder
                 'color' => '#10b981',
             ]
         );
-
+        
         // 5. Create Owner for Bilcode
         User::updateOrCreate(
             ['email' => 'owner@bilcode.com'],
             [
-                'name' => 'Rizky Eka (Owner)',
+                'name' => 'ABIL (Owner)',
                 'password' => Hash::make('password'),
                 'role' => 'owner',
                 'tenant_id' => $tenant->id,

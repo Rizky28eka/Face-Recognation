@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class KaryawanController extends Controller
 {
@@ -188,5 +189,29 @@ class KaryawanController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Status Izin WFH berhasil diperbarui.');
+    }
+
+    public function download(User $user)
+    {
+        /** @var \App\Models\User $currentUser */
+        $currentUser = Auth::user();
+
+        // Security check
+        if ($user->tenant_id !== $currentUser->tenant_id) {
+            abort(403);
+        }
+
+        $attendances = \App\Models\Attendance::where('user_id', $user->id)
+            ->orderBy('attended_at', 'desc')
+            ->take(20)
+            ->get();
+
+        $pdf = Pdf::loadView('pdf.employee-detail', [
+            'employee' => $user->load(['shift', 'branch']),
+            'attendances' => $attendances,
+            'tenant' => $currentUser->tenant
+        ]);
+
+        return $pdf->download("Detail_Karyawan_{$user->id}.pdf");
     }
 }

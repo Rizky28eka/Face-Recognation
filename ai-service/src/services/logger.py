@@ -18,7 +18,7 @@ class InferenceLogger:
 
     def log(self, name: str, confidence: float, status: str, 
             detection_time: float = 0, extraction_time: float = 0, prediction_time: float = 0,
-            bbox=None):
+            bbox=None, metrics: dict = None):
         """
         Log an inference event with timing metrics and bounding box.
         """
@@ -32,6 +32,15 @@ class InferenceLogger:
             "prediction_time": round(prediction_time * 1000, 2), # ms
             "timestamp": datetime.now().isoformat()
         }
+
+        # Add global model metrics if provided
+        if metrics:
+            log_entry.update({
+                "model_accuracy": metrics.get("accuracy"),
+                "model_f1_score": metrics.get("f1_score"),
+                "model_precision": metrics.get("precision"),
+                "model_recall": metrics.get("recall")
+            })
 
         try:
             with open(self.log_file_path, "r") as f:

@@ -49,6 +49,8 @@ interface Attendance {
     late_minutes: number;
     image_path: string | null;
     work_type: 'wfo' | 'wfh' | 'dinas_luar';
+    accuracy?: number;
+    f1_score?: number;
 }
 
 interface Props {
@@ -371,6 +373,15 @@ export default function Show({ employee, recentAttendances = [] }: Props) {
                                                                     ? 'TERLAMBAT'
                                                                     : 'TEPAT WAKTU'}
                                                             </span>
+                                                            {attn.f1_score && (
+                                                                <span className="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full font-bold">
+                                                                    AI:{' '}
+                                                                    {Math.round(
+                                                                        attn.f1_score,
+                                                                    )}
+                                                                    %
+                                                                </span>
+                                                            )}
                                                         </p>
                                                         <p className="text-xs text-gray-500 mt-0.5 truncate">
                                                             {new Date(

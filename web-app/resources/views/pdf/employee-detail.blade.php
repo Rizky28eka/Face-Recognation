@@ -159,6 +159,7 @@
                         <th>Tipe</th>
                         <th>Mode</th>
                         <th>Status</th>
+                        <th>AI Audit</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -171,6 +172,10 @@
                                 <span class="status-badge {{ $attn->late_minutes > 0 ? 'status-late' : 'status-on-time' }}">
                                     {{ $attn->late_minutes > 0 ? 'TERLAMBAT' : 'TEPAT WAKTU' }}
                                 </span>
+                            </td>
+                            <td style="font-size: 10px;">
+                                <span style="color: #6366f1; font-weight: bold;">Conf: {{ number_format($attn->confidence * 100, 1) }}%</span><br>
+                                <span style="color: #10b981;">F1-Score: {{ $attn->f1_score ? round($attn->f1_score) . '%' : '-' }}</span>
                             </td>
                         </tr>
                     @empty

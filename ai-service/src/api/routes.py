@@ -252,6 +252,17 @@ async def predict_face(file: UploadFile = File(...)):
     if image is None:
         raise HTTPException(status_code=400, detail="Could not decode image.")
 
+    # Load current model metrics
+    metrics = {}
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+    metrics_path = os.path.join(project_root, settings.METRICS_PATH)
+    if os.path.exists(metrics_path):
+        try:
+            with open(metrics_path, "r") as f:
+                metrics = json.load(f)
+        except:
+            pass
+
     import time
     
     # 1. Face Detection
@@ -260,8 +271,15 @@ async def predict_face(file: UploadFile = File(...)):
     det_time = time.time() - start_det
     
     if len(faces) == 0:
-        inference_logger.log("unknown", 0.0, "unrecognized", det_time, 0, 0, None)
-        return {"name": "unknown", "confidence": 0.0, "status": "unrecognized", "bbox": None}
+        inference_logger.log("unknown", 0.0, "unrecognized", det_time, 0, 0, None, metrics=metrics)
+        return {
+            "name": "unknown", 
+            "confidence": 0.0, 
+            "status": "unrecognized", 
+            "bbox": None,
+            "accuracy": metrics.get("accuracy"),
+            "f1_score": metrics.get("f1_score")
+        }
     
     # Get the bounding box of the first detected face
     face_box = faces[0]
@@ -302,13 +320,17 @@ async def predict_face(file: UploadFile = File(...)):
             _, buffer = cv2.imencode('.jpg', annotated_image)
             annotated_base64 = base64.b64encode(buffer).decode('utf-8')
 
-            inference_logger.log(name, round(confidence, 2), "recognized", det_time, ext_time, pre_time, face_box)
+            inference_logger.log(name, round(confidence, 2), "recognized", det_time, ext_time, pre_time, face_box, metrics=metrics)
             return {
                 "name": name, 
                 "confidence": round(confidence, 2), 
                 "status": "recognized", 
                 "bbox": face_box,
-                "annotated_image": annotated_base64
+                "annotated_image": annotated_base64,
+                "accuracy": metrics.get("accuracy"),
+                "f1_score": metrics.get("f1_score"),
+                "precision": metrics.get("precision"),
+                "recall": metrics.get("recall")
             }
         else:
             # Create annotated image for unknown
@@ -328,13 +350,15 @@ async def predict_face(file: UploadFile = File(...)):
             _, buffer = cv2.imencode('.jpg', annotated_image)
             annotated_base64 = base64.b64encode(buffer).decode('utf-8')
 
-            inference_logger.log("unknown", round(confidence, 2), "unrecognized", det_time, ext_time, pre_time, face_box)
+            inference_logger.log("unknown", round(confidence, 2), "unrecognized", det_time, ext_time, pre_time, face_box, metrics=metrics)
             return {
                 "name": "unknown", 
                 "confidence": round(confidence, 2), 
                 "status": "unrecognized", 
                 "bbox": face_box,
-                "annotated_image": annotated_base64
+                "annotated_image": annotated_base64,
+                "accuracy": metrics.get("accuracy"),
+                "f1_score": metrics.get("f1_score")
             }
             
     except Exception as e:

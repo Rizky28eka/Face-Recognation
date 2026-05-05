@@ -52,6 +52,10 @@ interface Attendance {
         id: number;
         name: string;
     };
+    f1_score?: number;
+    accuracy?: number;
+    precision?: number;
+    recall?: number;
 }
 
 interface Props {
@@ -253,6 +257,7 @@ export default function Report({ attendances, employees, filters }: Props) {
                                             <TableHead>Metode</TableHead>
                                             <TableHead>Lokasi/Cabang</TableHead>
                                             <TableHead>Confidence</TableHead>
+                                            <TableHead>F1 Score</TableHead>
                                             <TableHead className="text-right">
                                                 Aksi
                                             </TableHead>
@@ -360,23 +365,43 @@ export default function Report({ attendances, employees, filters }: Props) {
                                                             </div>
                                                         </TableCell>
                                                         <TableCell>
-                                                            <div className="flex items-center gap-2">
-                                                                <div className="flex-1 h-1.5 w-12 bg-gray-100 rounded-full overflow-hidden">
-                                                                    <div
-                                                                        className="h-full bg-indigo-500 rounded-full"
-                                                                        style={{
-                                                                            width: `${attendance.confidence * 100}%`,
-                                                                        }}
-                                                                    />
-                                                                </div>
+                                                            {(attendance.confidence !== undefined && attendance.confidence !== null) ? (
                                                                 <span className="text-xs font-bold text-indigo-600">
                                                                     {Math.round(
                                                                         attendance.confidence *
                                                                             100,
                                                                     )}
-                                                                    %
+                                                                    % Match
                                                                 </span>
-                                                            </div>
+                                                            ) : (
+                                                                <span className="text-xs text-gray-400 italic">
+                                                                    No Data
+                                                                </span>
+                                                            )}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {(attendance.f1_score !== undefined && attendance.f1_score !== null) ? (
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="flex-1 h-1.5 w-12 bg-gray-100 rounded-full overflow-hidden">
+                                                                        <div
+                                                                            className="h-full bg-emerald-500 rounded-full"
+                                                                            style={{
+                                                                                width: `${attendance.f1_score}%`,
+                                                                            }}
+                                                                        />
+                                                                    </div>
+                                                                    <span className="text-xs font-bold text-emerald-600">
+                                                                        {Math.round(
+                                                                            attendance.f1_score,
+                                                                        )}
+                                                                        %
+                                                                    </span>
+                                                                </div>
+                                                            ) : (
+                                                                <span className="text-xs text-gray-400 italic">
+                                                                    No Data
+                                                                </span>
+                                                            )}
                                                         </TableCell>
                                                         <TableCell className="text-right">
                                                             <Link
@@ -464,11 +489,13 @@ export default function Report({ attendances, employees, filters }: Props) {
                                                             Confidence
                                                         </p>
                                                         <p className="text-sm font-bold text-indigo-600">
-                                                            {Math.round(
-                                                                attendance.confidence *
-                                                                    100,
+                                                            {attendance.confidence ? (
+                                                                `${Math.round(attendance.confidence * 100)}% Match`
+                                                            ) : (
+                                                                <span className="text-gray-400 italic font-normal">
+                                                                    No Data
+                                                                </span>
                                                             )}
-                                                            % Match
                                                         </p>
                                                     </div>
                                                     <div>
@@ -479,6 +506,19 @@ export default function Report({ attendances, employees, filters }: Props) {
                                                             {attendance.type}
                                                         </p>
                                                     </div>
+                                                    {(attendance.f1_score !== undefined && attendance.f1_score !== null) && (
+                                                        <div className="col-span-2">
+                                                            <p className="text-[10px] font-bold text-gray-400 uppercase">
+                                                                Model F1 Score
+                                                            </p>
+                                                            <p className="text-sm font-bold text-emerald-600">
+                                                                {Math.round(
+                                                                    attendance.f1_score,
+                                                                )}
+                                                                % Reliability
+                                                            </p>
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 <div className="flex items-center justify-between py-3 border-t border-gray-50 text-xs text-gray-400">
                                                     <div className="flex items-center gap-1.5 font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">

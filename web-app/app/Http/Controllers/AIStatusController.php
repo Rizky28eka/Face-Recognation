@@ -58,7 +58,11 @@ class AIStatusController extends Controller
                     'time' => $att->attended_at,
                     'status' => $att->confidence > 0.7 ? 'Success' : 'Low Confidence',
                     'bbox' => $att->bbox,
-                    'image_url' => $att->image_path ? asset('storage/' . $att->image_path) : null
+                    'image_url' => $att->image_path ? asset('storage/' . $att->image_path) : null,
+                    'accuracy' => $att->accuracy,
+                    'f1_score' => $att->f1_score,
+                    'precision' => $att->precision,
+                    'recall' => $att->recall,
                 ];
             });
 

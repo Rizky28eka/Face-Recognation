@@ -1,0 +1,382 @@
+[
+  {
+    "name": "17_dwicky",
+    "confidence": 0.6,
+    "status": "recognized",
+    "bbox": [
+      451,
+      257,
+      496,
+      496
+    ],
+    "detection_time": 113.07,
+    "extraction_time": 2.41,
+    "prediction_time": 19.19,
+    "timestamp": "2026-05-05T22:21:20.627245",
+    "model_accuracy": 66.67,
+    "model_f1_score": 56.94,
+    "model_precision": 52.78,
+    "model_recall": 66.67
+  },
+  {
+    "name": "17_dwicky",
+    "confidence": 0.6,
+    "status": "recognized",
+    "bbox": [
+      451,
+      257,
+      496,
+      496
+    ],
+    "detection_time": 127.78,
+    "extraction_time": 2.55,
+    "prediction_time": 20.46,
+    "timestamp": "2026-05-05T22:21:16.525182",
+    "model_accuracy": 66.67,
+    "model_f1_score": 56.94,
+    "model_precision": 52.78,
+    "model_recall": 66.67
+  },
+  {
+    "name": "unknown",
+    "confidence": 0.4,
+    "status": "unrecognized",
+    "bbox": [
+      443,
+      251,
+      511,
+      511
+    ],
+    "detection_time": 100.57,
+    "extraction_time": 1.54,
+    "prediction_time": 15.47,
+    "timestamp": "2026-05-05T22:20:57.358261",
+    "model_accuracy": 66.67,
+    "model_f1_score": 56.94,
+    "model_precision": 52.78,
+    "model_recall": 66.67
+  },
+  {
+    "name": "unknown",
+    "confidence": 0.4,
+    "status": "unrecognized",
+    "bbox": [
+      443,
+      251,
+      511,
+      511
+    ],
+    "detection_time": 190.38,
+    "extraction_time": 1.66,
+    "prediction_time": 19.48,
+    "timestamp": "2026-05-05T22:20:44.432556",
+    "model_accuracy": 66.67,
+    "model_f1_score": 56.94,
+    "model_precision": 52.78,
+    "model_recall": 66.67
+  },
+  {
+    "name": "16_farrel",
+    "confidence": 0.6,
+    "status": "recognized",
+    "bbox": [
+      544,
+      312,
+      332,
+      332
+    ],
+    "detection_time": 76.83,
+    "extraction_time": 2.2,
+    "prediction_time": 25.93,
+    "timestamp": "2026-05-05T22:19:02.229211",
+    "model_accuracy": 63.64,
+    "model_f1_score": 54.55,
+    "model_precision": 50.0,
+    "model_recall": 63.64
+  },
+  {
+    "name": "16_farrel",
+    "confidence": 0.6,
+    "status": "recognized",
+    "bbox": [
+      544,
+      312,
+      332,
+      332
+    ],
+    "detection_time": 402.97,
+    "extraction_time": 1.54,
+    "prediction_time": 25.35,
+    "timestamp": "2026-05-05T22:18:57.523343",
+    "model_accuracy": 63.64,
+    "model_f1_score": 54.55,
+    "model_precision": 50.0,
+    "model_recall": 63.64
+  },
+  {
+    "name": "14_fatahrohman",
+    "confidence": 0.6,
+    "status": "recognized",
+    "bbox": [
+      434,
+      150,
+      520,
+      520
+    ],
+    "detection_time": 100.93,
+    "extraction_time": 1.32,
+    "prediction_time": 15.64,
+    "timestamp": "2026-05-05T22:14:47.851928",
+    "model_accuracy": 66.67,
+    "model_f1_score": 57.41,
+    "model_precision": 53.7,
+    "model_recall": 66.67
+  },
+  {
+    "name": "14_fatahrohman",
+    "confidence": 0.6,
+    "status": "recognized",
+    "bbox": [
+      434,
+      150,
+      520,
+      520
+    ],
+    "detection_time": 403.62,
+    "extraction_time": 1.66,
+    "prediction_time": 16.38,
+    "timestamp": "2026-05-05T22:14:43.724579",
+    "model_accuracy": 66.67,
+    "model_f1_score": 57.41,
+    "model_precision": 53.7,
+    "model_recall": 66.67
+  },
+  {
+    "name": "13_erfanhasibuan",
+    "confidence": 0.8,
+    "status": "recognized",
+    "bbox": [
+      433,
+      110,
+      544,
+      544
+    ],
+    "detection_time": 91.87,
+    "extraction_time": 1.67,
+    "prediction_time": 13.34,
+    "timestamp": "2026-05-05T22:12:24.058472",
+    "model_accuracy": 75.0,
+    "model_f1_score": 66.67,
+    "model_precision": 62.5,
+    "model_recall": 75.0
+  },
+  {
+    "name": "13_erfanhasibuan",
+    "confidence": 0.8,
+    "status": "recognized",
+    "bbox": [
+      433,
+      110,
+      544,
+      544
+    ],
+    "detection_time": 636.87,
+    "extraction_time": 2.44,
+    "prediction_time": 41.23,
+    "timestamp": "2026-05-05T22:12:16.771849",
+    "model_accuracy": 75.0,
+    "model_f1_score": 66.67,
+    "model_precision": 62.5,
+    "model_recall": 75.0
+  },
+  {
+    "name": "12_anastasya",
+    "confidence": 0.6,
+    "status": "recognized",
+    "bbox": [
+      284,
+      175,
+      175,
+      175
+    ],
+    "detection_time": 47.19,
+    "extraction_time": 1.47,
+    "prediction_time": 16.46,
+    "timestamp": "2026-05-05T16:59:32.320191",
+    "model_accuracy": 57.14,
+    "model_f1_score": 52.38,
+    "model_precision": 50.0,
+    "model_recall": 57.14
+  },
+  {
+    "name": "12_anastasya",
+    "confidence": 0.6,
+    "status": "recognized",
+    "bbox": [
+      281,
+      162,
+      199,
+      199
+    ],
+    "detection_time": 119.44,
+    "extraction_time": 1.72,
+    "prediction_time": 45.03,
+    "timestamp": "2026-05-05T16:59:20.501701",
+    "model_accuracy": 57.14,
+    "model_f1_score": 52.38,
+    "model_precision": 50.0,
+    "model_recall": 57.14
+  },
+  {
+    "name": "11_hasimsubianto",
+    "confidence": 0.6,
+    "status": "recognized",
+    "bbox": [
+      541,
+      150,
+      381,
+      381
+    ],
+    "detection_time": 84.93,
+    "extraction_time": 1.73,
+    "prediction_time": 18.38,
+    "timestamp": "2026-05-05T15:17:45.270920",
+    "model_accuracy": 66.67,
+    "model_f1_score": 61.11,
+    "model_precision": 58.33,
+    "model_recall": 66.67
+  },
+  {
+    "name": "11_hasimsubianto",
+    "confidence": 0.6,
+    "status": "recognized",
+    "bbox": [
+      541,
+      150,
+      381,
+      381
+    ],
+    "detection_time": 98.53,
+    "extraction_time": 3.45,
+    "prediction_time": 62.32,
+    "timestamp": "2026-05-05T15:17:37.182497",
+    "model_accuracy": 66.67,
+    "model_f1_score": 61.11,
+    "model_precision": 58.33,
+    "model_recall": 66.67
+  },
+  {
+    "name": "9_muhammadarungaditya",
+    "confidence": 0.6,
+    "status": "recognized",
+    "bbox": [
+      234,
+      134,
+      265,
+      265
+    ],
+    "detection_time": 33.64,
+    "extraction_time": 0.11,
+    "prediction_time": 8.68,
+    "timestamp": "2026-05-05T15:15:56.065060",
+    "model_accuracy": 66.67,
+    "model_f1_score": 61.11,
+    "model_precision": 58.33,
+    "model_recall": 66.67
+  },
+  {
+    "name": "9_muhammadarungaditya",
+    "confidence": 0.6,
+    "status": "recognized",
+    "bbox": [
+      236,
+      135,
+      247,
+      247
+    ],
+    "detection_time": 39.53,
+    "extraction_time": 0.07,
+    "prediction_time": 2.87,
+    "timestamp": "2026-05-05T15:15:48.787491",
+    "model_accuracy": 66.67,
+    "model_f1_score": 61.11,
+    "model_precision": 58.33,
+    "model_recall": 66.67
+  },
+  {
+    "name": "unknown",
+    "confidence": 0.4,
+    "status": "unrecognized",
+    "bbox": [
+      237,
+      142,
+      253,
+      253
+    ],
+    "detection_time": 26.58,
+    "extraction_time": 0.07,
+    "prediction_time": 3.49,
+    "timestamp": "2026-05-05T15:15:45.927538",
+    "model_accuracy": 66.67,
+    "model_f1_score": 61.11,
+    "model_precision": 58.33,
+    "model_recall": 66.67
+  },
+  {
+    "name": "9_muhammadarungaditya",
+    "confidence": 0.6,
+    "status": "recognized",
+    "bbox": [
+      243,
+      137,
+      254,
+      254
+    ],
+    "detection_time": 30.12,
+    "extraction_time": 0.2,
+    "prediction_time": 6.16,
+    "timestamp": "2026-05-05T15:15:42.725993",
+    "model_accuracy": 66.67,
+    "model_f1_score": 61.11,
+    "model_precision": 58.33,
+    "model_recall": 66.67
+  },
+  {
+    "name": "9_muhammadarungaditya",
+    "confidence": 0.6,
+    "status": "recognized",
+    "bbox": [
+      233,
+      142,
+      249,
+      249
+    ],
+    "detection_time": 31.16,
+    "extraction_time": 1.45,
+    "prediction_time": 12.74,
+    "timestamp": "2026-05-05T15:15:34.629401",
+    "model_accuracy": 66.67,
+    "model_f1_score": 61.11,
+    "model_precision": 58.33,
+    "model_recall": 66.67
+  },
+  {
+    "name": "9_muhammadarungaditya",
+    "confidence": 0.6,
+    "status": "recognized",
+    "bbox": [
+      264,
+      175,
+      254,
+      254
+    ],
+    "detection_time": 44.18,
+    "extraction_time": 1.58,
+    "prediction_time": 15.14,
+    "timestamp": "2026-05-05T15:15:25.994342",
+    "model_accuracy": 66.67,
+    "model_f1_score": 61.11,
+    "model_precision": 58.33,
+    "model_recall": 66.67
+  }
+]

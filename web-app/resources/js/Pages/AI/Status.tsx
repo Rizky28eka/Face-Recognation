@@ -101,6 +101,10 @@ interface Attendance {
     status: string;
     bbox: number[] | null;
     image_url: string | null;
+    accuracy?: number;
+    f1_score?: number;
+    precision?: number;
+    recall?: number;
 }
 
 interface TestingReport {
@@ -593,7 +597,13 @@ export default function AIStatusDashboard({ aiStatus }: Props) {
                                                                                     {att.bbox && (
                                                                                         <span className="text-[9px] text-slate-400 flex items-center gap-1">
                                                                                             <Scan className="w-3 h-3" />
-                                                                                            [{att.bbox.join(', ')}]
+
+                                                                                            [
+                                                                                            {att.bbox.join(
+                                                                                                ', ',
+                                                                                            )}
+
+                                                                                            ]
                                                                                         </span>
                                                                                     )}
                                                                                 </div>
@@ -696,12 +706,19 @@ export default function AIStatusDashboard({ aiStatus }: Props) {
                                                                                         ).toFixed(
                                                                                             0,
                                                                                         )}
+
                                                                                         %
                                                                                     </Badge>
                                                                                     {log.bbox && (
                                                                                         <span className="text-[9px] text-slate-400 flex items-center gap-1">
                                                                                             <Scan className="w-3 h-3" />
-                                                                                            [{log.bbox.join(', ')}]
+
+                                                                                            [
+                                                                                            {log.bbox.join(
+                                                                                                ', ',
+                                                                                            )}
+
+                                                                                            ]
                                                                                         </span>
                                                                                     )}
                                                                                 </div>
@@ -1031,8 +1048,7 @@ function BoundingBoxModal({
                                         </div>
                                         <div className="text-[9px] opacity-90 border-t border-white/20 mt-1 pt-1">
                                             {log.name} -{' '}
-                                            {(log.confidence * 100).toFixed(0)}
-                                            %
+                                            {(log.confidence * 100).toFixed(0)}%
                                         </div>
                                     </div>
                                 </div>
@@ -1057,7 +1073,7 @@ function BoundingBoxModal({
                                 </Badge>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4 mt-6">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                                 <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700">
                                     <p className="text-[10px] font-bold text-slate-400 uppercase">
                                         Kepercayaan
@@ -1067,6 +1083,36 @@ function BoundingBoxModal({
                                     </p>
                                 </div>
                                 <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase">
+                                        F1-Score
+                                    </p>
+                                    <p className="text-lg font-black text-emerald-600">
+                                        {log.f1_score
+                                            ? `${Math.round(log.f1_score)}%`
+                                            : '-'}
+                                    </p>
+                                </div>
+                                <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase">
+                                        Precision
+                                    </p>
+                                    <p className="text-lg font-black text-blue-600">
+                                        {log.precision
+                                            ? `${Math.round(log.precision)}%`
+                                            : '-'}
+                                    </p>
+                                </div>
+                                <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase">
+                                        Recall
+                                    </p>
+                                    <p className="text-lg font-black text-rose-600">
+                                        {log.recall
+                                            ? `${Math.round(log.recall)}%`
+                                            : '-'}
+                                    </p>
+                                </div>
+                                <div className="col-span-2 md:col-span-4 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700">
                                     <p className="text-[10px] font-bold text-slate-400 uppercase">
                                         Koordinat BBox
                                     </p>

@@ -6,6 +6,8 @@ use App\Models\User;
 use App\Models\Tenant;
 use App\Models\Branch;
 use App\Models\Shift;
+use App\Models\Attendance;
+use Illuminate\Support\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -132,5 +134,57 @@ class DatabaseSeeder extends Seeder
                 'tenant_id' => $tenantDemo->id,
             ]
         );
+
+        // 8. Create Sample Attendances with AI Metrics
+        $budi = User::where('email', 'budi@bilcode.com')->first();
+        if ($budi) {
+            Attendance::create([
+                'user_id' => $budi->id,
+                'tenant_id' => $tenant->id,
+                'branch_id' => $hq->id,
+                'type' => 'in',
+                'work_type' => 'wfo',
+                'confidence' => 0.92,
+                'accuracy' => 75.0,
+                'precision' => 62.5,
+                'recall' => 75.0,
+                'f1_score' => 66.67,
+                'attended_at' => Carbon::now()->subHours(5),
+                'bbox' => [100, 150, 200, 250],
+            ]);
+
+            Attendance::create([
+                'user_id' => $budi->id,
+                'tenant_id' => $tenant->id,
+                'branch_id' => $hq->id,
+                'type' => 'out',
+                'work_type' => 'wfo',
+                'confidence' => 0.88,
+                'accuracy' => 75.0,
+                'precision' => 62.5,
+                'recall' => 75.0,
+                'f1_score' => 66.67,
+                'attended_at' => Carbon::now()->subMinutes(30),
+                'bbox' => [110, 160, 210, 260],
+            ]);
+        }
+
+        $ani = User::where('email', 'ani@bilcode.com')->first();
+        if ($ani) {
+            Attendance::create([
+                'user_id' => $ani->id,
+                'tenant_id' => $tenant->id,
+                'branch_id' => $bandung->id,
+                'type' => 'in',
+                'work_type' => 'wfo',
+                'confidence' => 0.95,
+                'accuracy' => 75.0,
+                'precision' => 62.5,
+                'recall' => 75.0,
+                'f1_score' => 66.67,
+                'attended_at' => Carbon::now()->subHours(8),
+                'bbox' => [50, 60, 150, 160],
+            ]);
+        }
     }
 }

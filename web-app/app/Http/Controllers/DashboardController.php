@@ -14,6 +14,13 @@ use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
+    protected $faceService;
+
+    public function __construct(\App\Services\FaceRecognitionService $faceService)
+    {
+        $this->faceService = $faceService;
+    }
+
     public function index()
     {
         /** @var \App\Models\User $user */
@@ -39,12 +46,21 @@ class DashboardController extends Controller
 
     private function getSuperAdminData()
     {
+        $aiData = $this->faceService->getStatus();
+        $status = $aiData['status'] ?? 'offline';
+        
+        // Handle different response formats from AI service
+        $metrics = $aiData['metrics'] ?? $aiData;
+        $accuracy = isset($metrics['accuracy']) ? $metrics['accuracy'] . '%' : 'N/A';
+        $totalUsers = $metrics['total_classes'] ?? 0;
+        $totalImages = $metrics['total_images'] ?? 0;
+
         return [
             'stats' => [
                 ['label' => 'Total Tenant', 'value' => Tenant::count(), 'icon' => 'Building2'],
-                ['label' => 'Total Pengguna', 'value' => User::count(), 'icon' => 'Users'],
+                ['label' => 'Trained Users', 'value' => $totalUsers, 'icon' => 'Users'],
                 ['label' => 'Total Absensi', 'value' => Attendance::count(), 'icon' => 'CalendarCheck'],
-                ['label' => 'AI Service Status', 'value' => 'Ready', 'icon' => 'Cpu'],
+                ['label' => 'AI Accuracy', 'value' => $accuracy, 'icon' => 'Target'],
             ],
             'recentData' => Tenant::withCount(['users', 'attendances'])->latest()->limit(5)->get(),
             'auditLogs' => AuditLog::with('user')->latest()->limit(10)->get(),

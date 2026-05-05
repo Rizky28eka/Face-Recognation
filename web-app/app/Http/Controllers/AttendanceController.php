@@ -127,7 +127,8 @@ class AttendanceController extends Controller
 
         // 4. Proses AI Scan
         $imageData = $request->input('image');
-        $image = str_replace('data:image/jpeg;base64,', '', $imageData);
+        // Support various base64 formats (jpeg, png, etc)
+        $image = preg_replace('#^data:image/\w+;base64,#i', '', $imageData);
         $image = str_replace(' ', '+', $image);
         $imageName = 'scan_' . time() . '.jpg';
         
@@ -208,12 +209,21 @@ class AttendanceController extends Controller
             // Simpan foto permanen (Utamakan foto yang ada bounding box dari AI)
             // Folder: attendances/{user_id}/{check_in|check_out}/{filename}
             $folderType = str_replace('-', '_', $type);
-            $finalPath = "attendances/{$user->id}/{$folderType}/{$imageName}";
-            $saveImage = isset($result['annotated_image']) 
+            $fileNameRaw = 'raw_' . $imageName;
+            $fileNameAnnotated = 'annotated_' . $imageName;
+            
+            $finalPathRaw = "attendances/{$user->id}/{$folderType}/{$fileNameRaw}";
+            $finalPathAnnotated = "attendances/{$user->id}/{$folderType}/{$fileNameAnnotated}";
+            
+            // Simpan yang Original
+            Storage::disk('public')->put($finalPathRaw, base64_decode($image));
+            
+            // Simpan yang Annotated (jika ada, kalau tidak ya pakai yang original lagi)
+            $saveImageAnnotated = isset($result['annotated_image']) 
                 ? base64_decode($result['annotated_image']) 
                 : base64_decode($image);
                 
-            Storage::disk('public')->put($finalPath, $saveImage);
+            Storage::disk('public')->put($finalPathAnnotated, $saveImageAnnotated);
 
             // Simpan riwayat
             Attendance::create([
@@ -221,7 +231,8 @@ class AttendanceController extends Controller
                 'type' => $type,
                 'work_type' => $isWfh ? 'wfh' : 'wfo',
                 'confidence' => $result['confidence'],
-                'image_path' => $finalPath,
+                'image_path' => $finalPathAnnotated,
+                'raw_image_path' => $finalPathRaw,
                 'latitude' => $request->input('latitude'),
                 'longitude' => $request->input('longitude'),
                 'ip_address' => $request->ip(),
@@ -232,6 +243,10 @@ class AttendanceController extends Controller
                 'late_minutes' => $lateMinutes,
                 'overtime_minutes' => $overtimeMinutes,
                 'bbox' => $result['bbox'] ?? null,
+                'accuracy' => $result['accuracy'] ?? null,
+                'f1_score' => $result['f1_score'] ?? null,
+                'precision' => $result['precision'] ?? null,
+                'recall' => $result['recall'] ?? null,
             ]);
 
             $message = "Berhasil! Selamat bekerja, " . $user->name . ".";

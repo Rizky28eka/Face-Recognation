@@ -1,17 +1,17 @@
-import { AppSidebar } from '@/Components/app-sidebar';
-import { SiteHeader } from '@/Components/site-header';
-import { SidebarInset, SidebarProvider } from '@/Components/ui/sidebar';
-import { Head } from '@inertiajs/react';
-import { useState, useRef, useCallback, useEffect } from 'react';
-import Webcam from 'react-webcam';
-import { Button } from '@/Components/ui/button';
+import { AppSidebar } from "@/Components/app-sidebar";
+import { SiteHeader } from "@/Components/site-header";
+import { SidebarInset, SidebarProvider } from "@/Components/ui/sidebar";
+import { Head } from "@inertiajs/react";
+import { useState, useRef, useCallback, useEffect } from "react";
+import Webcam from "react-webcam";
+import { Button } from "@/Components/ui/button";
 import {
     Card,
     CardContent,
     CardDescription,
     CardHeader,
     CardTitle,
-} from '@/Components/ui/card';
+} from "@/Components/ui/card";
 import {
     Camera,
     MapPin,
@@ -19,9 +19,10 @@ import {
     Loader2,
     CheckCircle2,
     XCircle,
-} from 'lucide-react';
-import { toast } from 'sonner';
-import axios from 'axios';
+    Upload,
+} from "lucide-react";
+import { toast } from "sonner";
+import axios from "axios";
 
 interface Attendance {
     id: number;
@@ -46,9 +47,9 @@ export default function Index({ recentAttendances }: Props) {
         lat: number;
         lng: number;
     } | null>(null);
-    const [networkInfo, setNetworkInfo] = useState<string>('Unknown');
-    const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
-    const [message, setMessage] = useState('');
+    const [networkInfo, setNetworkInfo] = useState<string>("Unknown");
+    const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+    const [message, setMessage] = useState("");
 
     // Get Geolocation on mount
     useEffect(() => {
@@ -61,23 +62,23 @@ export default function Index({ recentAttendances }: Props) {
                     });
                 },
                 (error) => {
-                    console.error('Error getting location:', error);
+                    console.error("Error getting location:", error);
                     toast.error(
-                        'Gagal mendapatkan lokasi. Pastikan GPS aktif.',
+                        "Gagal mendapatkan lokasi. Pastikan GPS aktif.",
                     );
                 },
             );
         }
 
         // Get Network Info
-        if ('connection' in navigator) {
+        if ("connection" in navigator) {
             const conn = (
                 navigator as unknown as {
                     connection: { effectiveType: string; type: string };
                 }
             ).connection;
             setNetworkInfo(
-                `${conn.effectiveType || 'N/A'} (${conn.type || 'unknown'})`,
+                `${conn.effectiveType || "N/A"} (${conn.type || "unknown"})`,
             );
         }
     }, []);
@@ -85,11 +86,11 @@ export default function Index({ recentAttendances }: Props) {
     const handleCheckIn = useCallback(
         async (image: string) => {
             setProcessing(true);
-            setStatus('idle');
+            setStatus("idle");
 
             try {
                 const response = await axios.post(
-                    route('attendance.check-in'),
+                    route("attendance.check-in"),
                     {
                         image,
                         latitude: location?.lat,
@@ -99,26 +100,26 @@ export default function Index({ recentAttendances }: Props) {
                 );
 
                 if (response.data.success) {
-                    setStatus('success');
+                    setStatus("success");
                     setMessage(response.data.message);
                     toast.success(response.data.message);
                 }
             } catch (error) {
-                setStatus('error');
+                setStatus("error");
                 if (
                     axios.isAxiosError(error) &&
                     error.response?.status === 400 &&
                     error.response?.data?.data
                 ) {
                     console.error(
-                        '[DEBUG FRONTEND] AI Service Response Data:',
+                        "[DEBUG FRONTEND] AI Service Response Data:",
                         JSON.stringify(error.response.data.data, null, 2),
                     );
                 }
                 const errorMessage =
                     axios.isAxiosError(error) && error.response?.data?.message
                         ? error.response.data.message
-                        : 'Gagal melakukan absensi. Silakan coba lagi.';
+                        : "Gagal melakukan absensi. Silakan coba lagi.";
                 setMessage(errorMessage);
                 toast.error(errorMessage);
             } finally {
@@ -138,9 +139,24 @@ export default function Index({ recentAttendances }: Props) {
 
     const reset = () => {
         setImgSrc(null);
-        setStatus('idle');
-        setMessage('');
+        setStatus("idle");
+        setMessage("");
     };
+
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64String = reader.result as string;
+                setImgSrc(base64String);
+                handleCheckIn(base64String);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     return (
         <SidebarProvider>
@@ -184,7 +200,7 @@ export default function Index({ recentAttendances }: Props) {
                                                     screenshotFormat="image/jpeg"
                                                     className="w-full h-full object-cover"
                                                     videoConstraints={{
-                                                        facingMode: 'user',
+                                                        facingMode: "user",
                                                     }}
                                                 />
                                                 <div className="absolute inset-0 border-2 border-dashed border-white/20 m-6 md:m-12 rounded-3xl pointer-events-none flex items-center justify-center transition-all group-hover:border-white/40">
@@ -199,10 +215,10 @@ export default function Index({ recentAttendances }: Props) {
                                                     className="w-full h-full object-cover"
                                                 />
                                                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-sm">
-                                                    {status === 'success' && (
+                                                    {status === "success" && (
                                                         <CheckCircle2 className="w-16 h-16 md:w-24 md:h-24 text-green-400 animate-bounce" />
                                                     )}
-                                                    {status === 'error' && (
+                                                    {status === "error" && (
                                                         <XCircle className="w-16 h-16 md:w-24 md:h-24 text-red-400 animate-shake" />
                                                     )}
                                                 </div>
@@ -210,15 +226,38 @@ export default function Index({ recentAttendances }: Props) {
                                         )}
 
                                         <div className="p-6 md:p-8 flex flex-col items-center gap-4 md:gap-6">
-                                            {status === 'idle' &&
+                                            {status === "idle" &&
                                                 !processing && (
-                                                    <Button
-                                                        onClick={capture}
-                                                        className="w-full max-w-sm h-14 md:h-16 text-lg md:text-xl bg-indigo-600 hover:bg-indigo-700 rounded-full shadow-lg shadow-indigo-200 transition-all active:scale-95"
-                                                    >
-                                                        <Camera className="mr-2 w-5 h-5 md:w-6 md:h-6" />
-                                                        Ambil Foto
-                                                    </Button>
+                                                    <div className="flex flex-col md:flex-row gap-3 w-full max-w-md justify-center">
+                                                        <Button
+                                                            onClick={capture}
+                                                            className="flex-1 h-14 md:h-16 text-lg bg-indigo-600 hover:bg-indigo-700 rounded-2xl shadow-lg shadow-indigo-200 transition-all active:scale-95"
+                                                        >
+                                                            <Camera className="mr-2 w-5 h-5" />
+                                                            Ambil Foto
+                                                        </Button>
+
+                                                        <input
+                                                            type="file"
+                                                            ref={fileInputRef}
+                                                            onChange={
+                                                                handleFileUpload
+                                                            }
+                                                            accept="image/*"
+                                                            className="hidden"
+                                                        />
+
+                                                        <Button
+                                                            variant="outline"
+                                                            onClick={() =>
+                                                                fileInputRef.current?.click()
+                                                            }
+                                                            className="flex-1 h-14 md:h-16 text-lg border-2 border-indigo-100 hover:bg-indigo-50 text-indigo-600 rounded-2xl transition-all active:scale-95"
+                                                        >
+                                                            <Upload className="mr-2 w-5 h-5" />
+                                                            Upload Foto
+                                                        </Button>
+                                                    </div>
                                                 )}
 
                                             {processing && (
@@ -230,11 +269,11 @@ export default function Index({ recentAttendances }: Props) {
                                                 </div>
                                             )}
 
-                                            {status !== 'idle' &&
+                                            {status !== "idle" &&
                                                 !processing && (
                                                     <div className="text-center space-y-4 md:space-y-6 w-full max-w-sm">
                                                         <p
-                                                            className={`text-lg md:text-2xl font-bold ${status === 'success' ? 'text-green-600' : 'text-red-600'}`}
+                                                            className={`text-lg md:text-2xl font-bold ${status === "success" ? "text-green-600" : "text-red-600"}`}
                                                         >
                                                             {message}
                                                         </p>
@@ -270,7 +309,7 @@ export default function Index({ recentAttendances }: Props) {
                                                 <p className="text-sm font-bold text-gray-700 truncate">
                                                     {location
                                                         ? `${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}`
-                                                        : 'Mencari lokasi...'}
+                                                        : "Mencari lokasi..."}
                                                 </p>
                                             </div>
                                         </div>
@@ -314,15 +353,15 @@ export default function Index({ recentAttendances }: Props) {
                                                                 <span className="text-[10px] text-gray-400 font-medium truncate">
                                                                     {
                                                                         att.attended_at
-                                                                    }{' '}
-                                                                    •{' '}
+                                                                    }{" "}
+                                                                    •{" "}
                                                                     {att.branch
                                                                         ?.name ||
-                                                                        'Luar Area'}
+                                                                        "Luar Area"}
                                                                 </span>
                                                             </div>
                                                             <span
-                                                                className={`text-[10px] px-2.5 py-1 rounded-lg font-black uppercase tracking-tighter shrink-0 ${att.type === 'check-in' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}
+                                                                className={`text-[10px] px-2.5 py-1 rounded-lg font-black uppercase tracking-tighter shrink-0 ${att.type === "check-in" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}
                                                             >
                                                                 {att.type}
                                                             </span>

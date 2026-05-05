@@ -26,6 +26,11 @@ class Attendance extends Model
         'late_minutes',
         'overtime_minutes',
         'bbox',
+        'accuracy',
+        'f1_score',
+        'precision',
+        'recall',
+        'raw_image_path',
     ];
 
     protected $casts = [

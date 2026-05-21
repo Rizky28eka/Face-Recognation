@@ -26,6 +26,8 @@ class User extends Authenticatable
         'email',
         'password',
         'face_path',
+        'profile_photo_path',
+        'phone',
         'is_face_registered',
         'is_wfh',
         'role',

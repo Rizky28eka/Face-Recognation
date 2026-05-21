@@ -25,6 +25,8 @@ class KNNModelService:
     def predict(self, feature_vector: np.ndarray):
         """
         Predict the label and return confidence score.
+        Confidence = max(0, 1 - avg_distance / 3000), capped to [0, 1].
+        Returns (label, confidence, avg_distance).
         """
         if self.model is None:
             raise ValueError("Model not loaded. Please train the model first.")
@@ -32,29 +34,24 @@ class KNNModelService:
         X = feature_vector.reshape(1, -1)
         label = self.model.predict(X)[0]
         distances, indices = self.model.kneighbors(X)
-        avg_distance = np.mean(distances)
-        
-        # Get labels of the nearest neighbors
+        avg_distance = float(np.mean(distances))
+
+        # Distance-based confidence: closer = higher confidence
+        confidence = max(0.0, 1.0 - (avg_distance / 3000.0))
+
         neighbor_labels = [self.model.classes_[self.model._y[i]] for i in indices[0]]
-        
-        # Use predict_proba for confidence based on neighbor majority
-        proba = self.model.predict_proba(X)[0]
-        confidence = float(np.max(proba))
-        
+
         print("\n" + "="*50)
         print(f"[DEBUG KNN] Prediksi Utama -> Label: {label}, Confidence: {confidence:.4f}")
         print(f"[DEBUG KNN] Rata-rata Jarak (Avg Distance): {avg_distance:.2f}")
         print("[DEBUG KNN] Detail Tetangga Terdekat (Nearest Neighbors):")
         for i, (dist, lbl) in enumerate(zip(distances[0], neighbor_labels)):
             print(f"  -> Tetangga {i+1}: Label = {lbl}, Jarak = {dist:.2f}")
-        
-        # Solusi sementara: Jika jarak rata-rata terlalu jauh (> 3000), wajah sebenarnya tidak dikenali.
-        # Kita bisa turunkan confidence secara paksa jika mau, tapi saat ini kita biarkan untuk di-debug.
         if avg_distance > 3000:
-            print("[DEBUG KNN] ⚠️ PERINGATAN: Jarak terlalu jauh! Ini kemungkinan besar orang yang salah/tidak dikenal.")
+            print("[DEBUG KNN] PERINGATAN: Jarak terlalu jauh! Kemungkinan wajah tidak dikenal.")
         print("="*50 + "\n")
-        
-        return label, float(confidence), float(avg_distance)
+
+        return label, confidence, avg_distance
 
     def is_model_available(self):
         return self.model is not None

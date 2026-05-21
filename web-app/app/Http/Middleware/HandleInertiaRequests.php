@@ -32,7 +32,14 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user()?->load('tenant'),
+                'user' => $request->user() ? array_merge(
+                    $request->user()->load('tenant')->toArray(),
+                    [
+                        'avatar' => $request->user()->profile_photo_path
+                            ? asset('storage/' . $request->user()->profile_photo_path)
+                            : null,
+                    ]
+                ) : null,
             ],
             'flash' => [
                 'success' => $request->session()->get('success'),

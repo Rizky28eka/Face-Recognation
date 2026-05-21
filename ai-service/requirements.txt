@@ -2,6 +2,7 @@ fastapi
 uvicorn
 opencv-python
 scikit-learn
+scikit-image
 numpy
 joblib
 python-multipart
@@ -9,3 +10,5 @@ requests
 python-dotenv
 pydantic-settings
 psutil
+matplotlib
+matplotlib

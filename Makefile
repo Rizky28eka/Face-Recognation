@@ -33,7 +33,7 @@ install:
 	@echo "📦 Menginstal dependensi Laravel (PHP)..."
 	cd $(WEB_DIR) && composer install
 	@echo "📦 Menginstal dependensi Frontend (Node)..."
-	cd $(WEB_DIR) && npm install
+	cd $(WEB_DIR) && npm install --legacy-peer-deps
 	@echo "📦 Menginstal dependensi AI Service (Python)..."
 	cd $(AI_DIR) && python3 -m venv venv || true
 	. $(PYTHON_VENV) && cd $(AI_DIR) && pip install -r requirements.txt

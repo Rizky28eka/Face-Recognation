@@ -37,9 +37,10 @@ interface Attendance {
 
 interface Props {
     recentAttendances: Attendance[];
+    userRole: string;
 }
 
-export default function Index({ recentAttendances }: Props) {
+export default function Index({ recentAttendances, userRole }: Props) {
     const webcamRef = useRef<Webcam>(null);
     const [imgSrc, setImgSrc] = useState<string | null>(null);
     const [processing, setProcessing] = useState(false);
@@ -168,7 +169,8 @@ export default function Index({ recentAttendances }: Props) {
                 <div className="flex flex-1 flex-col pb-8">
                     <div className="px-4 lg:px-6 py-4 md:py-8">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-                            {/* Camera Section */}
+                            {/* Camera Section — only for karyawan */}
+                            {userRole === 'karyawan' ? (
                             <div className="md:col-span-2 space-y-4 md:space-y-6">
                                 <div>
                                     <h1 className="text-xl md:text-3xl font-bold tracking-tight text-gray-900">
@@ -290,6 +292,29 @@ export default function Index({ recentAttendances }: Props) {
                                     </CardContent>
                                 </Card>
                             </div>
+                            ) : (
+                            <div className="md:col-span-2 space-y-4 md:space-y-6">
+                                <div>
+                                    <h1 className="text-xl md:text-3xl font-bold tracking-tight text-gray-900">
+                                        Presensi Wajah
+                                    </h1>
+                                    <p className="text-xs md:text-sm text-gray-500 mt-1">
+                                        Pantau riwayat kehadiran karyawan.
+                                    </p>
+                                </div>
+                                <Card className="overflow-hidden border-none shadow-xl bg-white/80 backdrop-blur-md ring-1 ring-black/5 rounded-3xl">
+                                    <CardContent className="flex flex-col items-center justify-center py-16 gap-4 text-center">
+                                        <div className="p-4 bg-gray-100 rounded-full">
+                                            <Camera className="w-10 h-10 text-gray-400" />
+                                        </div>
+                                        <p className="text-lg font-semibold text-gray-600">Fitur Presensi Tidak Tersedia</p>
+                                        <p className="text-sm text-gray-400 max-w-xs">
+                                            Fitur scan wajah hanya tersedia untuk karyawan. Gunakan menu Laporan untuk memantau kehadiran.
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                            )}
 
                             {/* Info Section */}
                             <div className="space-y-4 md:space-y-6">

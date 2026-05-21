@@ -71,7 +71,7 @@ class TrainingService:
             X_train, X_test, y_train, y_test = train_test_split(
                 X, y, test_size=settings.TEST_SIZE, stratify=y, random_state=settings.RANDOM_STATE
             )
-            knn = KNeighborsClassifier(n_neighbors=min(settings.KNN_NEIGHBORS, len(X_train)), metric='euclidean')
+            knn = KNeighborsClassifier(n_neighbors=min(settings.KNN_NEIGHBORS, len(X_train)), metric='euclidean', weights='distance')
             knn.fit(X_train, y_train)
             y_pred = knn.predict(X_test)
             accuracy = accuracy_score(y_test, y_pred)
@@ -84,7 +84,7 @@ class TrainingService:
             recall = 1.0
             f1 = 1.0
             
-        knn_final = KNeighborsClassifier(n_neighbors=min(settings.KNN_NEIGHBORS, len(X)), metric='euclidean')
+        knn_final = KNeighborsClassifier(n_neighbors=min(settings.KNN_NEIGHBORS, len(X)), metric='euclidean', weights='distance')
         knn_final.fit(X, y)
 
         os.makedirs(os.path.dirname(self.model_path), exist_ok=True)

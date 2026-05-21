@@ -181,7 +181,7 @@ async def get_status():
             ],
             "response_time": [
                 {"no": 1, "proses": "Face Detection (HOG)", "t1": get_trials(avg_detection)[0], "t2": get_trials(avg_detection)[1], "t3": get_trials(avg_detection)[2], "avg": avg_detection},
-                {"no": 2, "proses": "Feature Extraction (Facenet)", "t1": get_trials(avg_extraction)[0], "t2": get_trials(avg_extraction)[1], "t3": get_trials(avg_extraction)[2], "avg": avg_extraction},
+                {"no": 2, "proses": "Feature Extraction (LBPH)", "t1": get_trials(avg_extraction)[0], "t2": get_trials(avg_extraction)[1], "t3": get_trials(avg_extraction)[2], "avg": avg_extraction},
                 {"no": 3, "proses": "KNN Prediction", "t1": get_trials(avg_prediction)[0], "t2": get_trials(avg_prediction)[1], "t3": get_trials(avg_prediction)[2], "avg": avg_prediction}
             ],
             "geofence": [

@@ -216,7 +216,7 @@ export default function AIStatusDashboard({ aiStatus }: Props) {
 
     const formatPercent = (val?: number) => {
         if (val === undefined || val === null) return '-';
-        return `${(val * 100).toFixed(1)}%`;
+        return `${Number(val).toFixed(2)}%`;
     };
 
     return (

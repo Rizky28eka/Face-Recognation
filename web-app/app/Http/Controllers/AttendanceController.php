@@ -36,6 +36,7 @@ class AttendanceController extends Controller
 
         return Inertia::render('Attendance/Index', [
             'recentAttendances' => $recentAttendances,
+            'userRole'          => Auth::user()->role,
         ]);
     }
 
@@ -52,6 +53,13 @@ class AttendanceController extends Controller
 
         /** @var \App\Models\User $user */
         $user = Auth::user();
+
+        if ($user->role !== 'karyawan') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Fitur presensi hanya tersedia untuk karyawan.',
+            ], 403);
+        }
         
         // 1. Validasi Status Sistem & Geofencing Cabang
         $branch = null;

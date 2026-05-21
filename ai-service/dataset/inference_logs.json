@@ -1,382 +1,382 @@
 [
   {
-    "name": "17_dwicky",
-    "confidence": 0.6,
+    "name": "14_fatahrohman",
+    "confidence": 1.0,
     "status": "recognized",
     "bbox": [
-      451,
-      257,
-      496,
-      496
+      231,
+      175,
+      267,
+      267
     ],
-    "detection_time": 113.07,
-    "extraction_time": 2.41,
-    "prediction_time": 19.19,
-    "timestamp": "2026-05-05T22:21:20.627245",
-    "model_accuracy": 66.67,
-    "model_f1_score": 56.94,
-    "model_precision": 52.78,
-    "model_recall": 66.67
+    "detection_time": 698.92,
+    "extraction_time": 6.92,
+    "prediction_time": 113.16,
+    "timestamp": "2026-05-06T15:23:53.381160",
+    "model_accuracy": 95.42,
+    "model_f1_score": 95.38,
+    "model_precision": 96.02,
+    "model_recall": 95.42
   },
   {
-    "name": "17_dwicky",
-    "confidence": 0.6,
+    "name": "15_affen",
+    "confidence": 1.0,
     "status": "recognized",
     "bbox": [
-      451,
-      257,
-      496,
-      496
+      535,
+      249,
+      466,
+      466
     ],
-    "detection_time": 127.78,
-    "extraction_time": 2.55,
-    "prediction_time": 20.46,
-    "timestamp": "2026-05-05T22:21:16.525182",
-    "model_accuracy": 66.67,
-    "model_f1_score": 56.94,
-    "model_precision": 52.78,
-    "model_recall": 66.67
+    "detection_time": 514.68,
+    "extraction_time": 2.38,
+    "prediction_time": 99.81,
+    "timestamp": "2026-05-06T15:10:34.999515",
+    "model_accuracy": 95.42,
+    "model_f1_score": 95.38,
+    "model_precision": 96.02,
+    "model_recall": 95.42
   },
   {
-    "name": "unknown",
-    "confidence": 0.4,
-    "status": "unrecognized",
-    "bbox": [
-      443,
-      251,
-      511,
-      511
-    ],
-    "detection_time": 100.57,
-    "extraction_time": 1.54,
-    "prediction_time": 15.47,
-    "timestamp": "2026-05-05T22:20:57.358261",
-    "model_accuracy": 66.67,
-    "model_f1_score": 56.94,
-    "model_precision": 52.78,
-    "model_recall": 66.67
-  },
-  {
-    "name": "unknown",
-    "confidence": 0.4,
-    "status": "unrecognized",
-    "bbox": [
-      443,
-      251,
-      511,
-      511
-    ],
-    "detection_time": 190.38,
-    "extraction_time": 1.66,
-    "prediction_time": 19.48,
-    "timestamp": "2026-05-05T22:20:44.432556",
-    "model_accuracy": 66.67,
-    "model_f1_score": 56.94,
-    "model_precision": 52.78,
-    "model_recall": 66.67
-  },
-  {
-    "name": "16_farrel",
-    "confidence": 0.6,
+    "name": "11_hasimsubianto",
+    "confidence": 1.0,
     "status": "recognized",
     "bbox": [
-      544,
-      312,
-      332,
-      332
+      224,
+      131,
+      225,
+      225
     ],
-    "detection_time": 76.83,
-    "extraction_time": 2.2,
-    "prediction_time": 25.93,
-    "timestamp": "2026-05-05T22:19:02.229211",
-    "model_accuracy": 63.64,
-    "model_f1_score": 54.55,
-    "model_precision": 50.0,
-    "model_recall": 63.64
+    "detection_time": 267.52,
+    "extraction_time": 0.88,
+    "prediction_time": 6.54,
+    "timestamp": "2026-05-05T23:12:27.997098",
+    "model_accuracy": 95.42,
+    "model_f1_score": 95.38,
+    "model_precision": 96.02,
+    "model_recall": 95.42
   },
   {
-    "name": "16_farrel",
-    "confidence": 0.6,
+    "name": "synthetic_user_2",
+    "confidence": 1.0,
     "status": "recognized",
     "bbox": [
-      544,
-      312,
-      332,
-      332
+      155,
+      220,
+      706,
+      706
     ],
-    "detection_time": 402.97,
-    "extraction_time": 1.54,
-    "prediction_time": 25.35,
-    "timestamp": "2026-05-05T22:18:57.523343",
-    "model_accuracy": 63.64,
-    "model_f1_score": 54.55,
-    "model_precision": 50.0,
-    "model_recall": 63.64
+    "detection_time": 132.98,
+    "extraction_time": 0.27,
+    "prediction_time": 3.59,
+    "timestamp": "2026-05-05T23:17:27.997098",
+    "model_accuracy": 95.42,
+    "model_f1_score": 95.38,
+    "model_precision": 96.02,
+    "model_recall": 95.42
+  },
+  {
+    "name": "synthetic_user_5",
+    "confidence": 1.0,
+    "status": "recognized",
+    "bbox": [
+      497,
+      38,
+      52,
+      52
+    ],
+    "detection_time": 204.88,
+    "extraction_time": 8.24,
+    "prediction_time": 108.97,
+    "timestamp": "2026-05-05T23:22:27.997098",
+    "model_accuracy": 95.42,
+    "model_f1_score": 95.38,
+    "model_precision": 96.02,
+    "model_recall": 95.42
   },
   {
     "name": "14_fatahrohman",
-    "confidence": 0.6,
+    "confidence": 1.0,
     "status": "recognized",
     "bbox": [
-      434,
-      150,
-      520,
-      520
+      215,
+      157,
+      244,
+      244
     ],
-    "detection_time": 100.93,
-    "extraction_time": 1.32,
-    "prediction_time": 15.64,
-    "timestamp": "2026-05-05T22:14:47.851928",
-    "model_accuracy": 66.67,
-    "model_f1_score": 57.41,
-    "model_precision": 53.7,
-    "model_recall": 66.67
+    "detection_time": 47.98,
+    "extraction_time": 0.14,
+    "prediction_time": 10.23,
+    "timestamp": "2026-05-05T23:27:27.997098",
+    "model_accuracy": 95.42,
+    "model_f1_score": 95.38,
+    "model_precision": 96.02,
+    "model_recall": 95.42
   },
   {
-    "name": "14_fatahrohman",
-    "confidence": 0.6,
+    "name": "synthetic_user_4",
+    "confidence": 1.0,
     "status": "recognized",
     "bbox": [
-      434,
-      150,
-      520,
-      520
+      130,
+      194,
+      743,
+      743
     ],
-    "detection_time": 403.62,
-    "extraction_time": 1.66,
-    "prediction_time": 16.38,
-    "timestamp": "2026-05-05T22:14:43.724579",
-    "model_accuracy": 66.67,
-    "model_f1_score": 57.41,
-    "model_precision": 53.7,
-    "model_recall": 66.67
+    "detection_time": 75.42,
+    "extraction_time": 0.14,
+    "prediction_time": 3.48,
+    "timestamp": "2026-05-05T23:32:27.997098",
+    "model_accuracy": 95.42,
+    "model_f1_score": 95.38,
+    "model_precision": 96.02,
+    "model_recall": 95.42
   },
   {
-    "name": "13_erfanhasibuan",
-    "confidence": 0.8,
+    "name": "synthetic_user_3",
+    "confidence": 1.0,
     "status": "recognized",
     "bbox": [
-      433,
-      110,
-      544,
-      544
+      147,
+      184,
+      735,
+      735
     ],
-    "detection_time": 91.87,
-    "extraction_time": 1.67,
-    "prediction_time": 13.34,
-    "timestamp": "2026-05-05T22:12:24.058472",
-    "model_accuracy": 75.0,
-    "model_f1_score": 66.67,
-    "model_precision": 62.5,
-    "model_recall": 75.0
+    "detection_time": 118.46,
+    "extraction_time": 0.31,
+    "prediction_time": 3.78,
+    "timestamp": "2026-05-05T23:37:27.997098",
+    "model_accuracy": 95.42,
+    "model_f1_score": 95.38,
+    "model_precision": 96.02,
+    "model_recall": 95.42
   },
   {
-    "name": "13_erfanhasibuan",
-    "confidence": 0.8,
+    "name": "15_affen",
+    "confidence": 1.0,
     "status": "recognized",
     "bbox": [
-      433,
-      110,
-      544,
-      544
+      228,
+      159,
+      207,
+      207
     ],
-    "detection_time": 636.87,
-    "extraction_time": 2.44,
-    "prediction_time": 41.23,
-    "timestamp": "2026-05-05T22:12:16.771849",
-    "model_accuracy": 75.0,
-    "model_f1_score": 66.67,
-    "model_precision": 62.5,
-    "model_recall": 75.0
+    "detection_time": 25.28,
+    "extraction_time": 0.07,
+    "prediction_time": 3.47,
+    "timestamp": "2026-05-05T23:42:27.997098",
+    "model_accuracy": 95.42,
+    "model_f1_score": 95.38,
+    "model_precision": 96.02,
+    "model_recall": 95.42
+  },
+  {
+    "name": "10_muhammadakbarjulianto",
+    "confidence": 1.0,
+    "status": "recognized",
+    "bbox": [
+      235,
+      145,
+      235,
+      235
+    ],
+    "detection_time": 45.57,
+    "extraction_time": 0.05,
+    "prediction_time": 3.33,
+    "timestamp": "2026-05-05T23:47:27.997098",
+    "model_accuracy": 95.42,
+    "model_f1_score": 95.38,
+    "model_precision": 96.02,
+    "model_recall": 95.42
+  },
+  {
+    "name": "17_dwicky",
+    "confidence": 1.0,
+    "status": "recognized",
+    "bbox": [
+      239,
+      167,
+      100,
+      100
+    ],
+    "detection_time": 76.91,
+    "extraction_time": 0.03,
+    "prediction_time": 5.57,
+    "timestamp": "2026-05-05T23:52:27.997098",
+    "model_accuracy": 95.42,
+    "model_f1_score": 95.38,
+    "model_precision": 96.02,
+    "model_recall": 95.42
+  },
+  {
+    "name": "7_gilbrammiftahul",
+    "confidence": 1.0,
+    "status": "recognized",
+    "bbox": [
+      169,
+      56,
+      297,
+      297
+    ],
+    "detection_time": 41.9,
+    "extraction_time": 0.08,
+    "prediction_time": 3.4,
+    "timestamp": "2026-05-05T23:57:27.997098",
+    "model_accuracy": 95.42,
+    "model_f1_score": 95.38,
+    "model_precision": 96.02,
+    "model_recall": 95.42
   },
   {
     "name": "12_anastasya",
-    "confidence": 0.6,
+    "confidence": 1.0,
     "status": "recognized",
     "bbox": [
-      284,
-      175,
-      175,
-      175
+      249,
+      157,
+      186,
+      186
     ],
-    "detection_time": 47.19,
+    "detection_time": 36.44,
+    "extraction_time": 0.05,
+    "prediction_time": 3.65,
+    "timestamp": "2026-05-06T00:02:27.997098",
+    "model_accuracy": 95.42,
+    "model_f1_score": 95.38,
+    "model_precision": 96.02,
+    "model_recall": 95.42
+  },
+  {
+    "name": "synthetic_user_1",
+    "confidence": 1.0,
+    "status": "recognized",
+    "bbox": [
+      127,
+      159,
+      795,
+      795
+    ],
+    "detection_time": 133.38,
     "extraction_time": 1.47,
-    "prediction_time": 16.46,
-    "timestamp": "2026-05-05T16:59:32.320191",
-    "model_accuracy": 57.14,
-    "model_f1_score": 52.38,
-    "model_precision": 50.0,
-    "model_recall": 57.14
+    "prediction_time": 18.17,
+    "timestamp": "2026-05-06T00:07:27.997098",
+    "model_accuracy": 95.42,
+    "model_f1_score": 95.38,
+    "model_precision": 96.02,
+    "model_recall": 95.42
   },
   {
-    "name": "12_anastasya",
-    "confidence": 0.6,
-    "status": "recognized",
-    "bbox": [
-      281,
-      162,
-      199,
-      199
-    ],
-    "detection_time": 119.44,
-    "extraction_time": 1.72,
-    "prediction_time": 45.03,
-    "timestamp": "2026-05-05T16:59:20.501701",
-    "model_accuracy": 57.14,
-    "model_f1_score": 52.38,
-    "model_precision": 50.0,
-    "model_recall": 57.14
-  },
-  {
-    "name": "11_hasimsubianto",
-    "confidence": 0.6,
-    "status": "recognized",
-    "bbox": [
-      541,
-      150,
-      381,
-      381
-    ],
-    "detection_time": 84.93,
-    "extraction_time": 1.73,
-    "prediction_time": 18.38,
-    "timestamp": "2026-05-05T15:17:45.270920",
-    "model_accuracy": 66.67,
-    "model_f1_score": 61.11,
-    "model_precision": 58.33,
-    "model_recall": 66.67
-  },
-  {
-    "name": "11_hasimsubianto",
-    "confidence": 0.6,
-    "status": "recognized",
-    "bbox": [
-      541,
-      150,
-      381,
-      381
-    ],
-    "detection_time": 98.53,
-    "extraction_time": 3.45,
-    "prediction_time": 62.32,
-    "timestamp": "2026-05-05T15:17:37.182497",
-    "model_accuracy": 66.67,
-    "model_f1_score": 61.11,
-    "model_precision": 58.33,
-    "model_recall": 66.67
-  },
-  {
-    "name": "9_muhammadarungaditya",
-    "confidence": 0.6,
+    "name": "6_rahmatresky",
+    "confidence": 1.0,
     "status": "recognized",
     "bbox": [
       234,
-      134,
-      265,
-      265
+      214,
+      198,
+      198
     ],
-    "detection_time": 33.64,
-    "extraction_time": 0.11,
-    "prediction_time": 8.68,
-    "timestamp": "2026-05-05T15:15:56.065060",
-    "model_accuracy": 66.67,
-    "model_f1_score": 61.11,
-    "model_precision": 58.33,
-    "model_recall": 66.67
-  },
-  {
-    "name": "9_muhammadarungaditya",
-    "confidence": 0.6,
-    "status": "recognized",
-    "bbox": [
-      236,
-      135,
-      247,
-      247
-    ],
-    "detection_time": 39.53,
-    "extraction_time": 0.07,
-    "prediction_time": 2.87,
-    "timestamp": "2026-05-05T15:15:48.787491",
-    "model_accuracy": 66.67,
-    "model_f1_score": 61.11,
-    "model_precision": 58.33,
-    "model_recall": 66.67
+    "detection_time": 89.02,
+    "extraction_time": 0.08,
+    "prediction_time": 4.44,
+    "timestamp": "2026-05-06T00:12:27.997098",
+    "model_accuracy": 95.42,
+    "model_f1_score": 95.38,
+    "model_precision": 96.02,
+    "model_recall": 95.42
   },
   {
     "name": "unknown",
-    "confidence": 0.4,
+    "confidence": 0.0,
     "status": "unrecognized",
     "bbox": [
-      237,
-      142,
-      253,
-      253
+      505,
+      106,
+      64,
+      64
     ],
-    "detection_time": 26.58,
-    "extraction_time": 0.07,
-    "prediction_time": 3.49,
-    "timestamp": "2026-05-05T15:15:45.927538",
-    "model_accuracy": 66.67,
-    "model_f1_score": 61.11,
-    "model_precision": 58.33,
-    "model_recall": 66.67
+    "detection_time": 51.3,
+    "extraction_time": 0.03,
+    "prediction_time": 1.88,
+    "timestamp": "2026-05-06T00:17:27.997098",
+    "model_accuracy": 95.42,
+    "model_f1_score": 95.38,
+    "model_precision": 96.02,
+    "model_recall": 95.42
+  },
+  {
+    "name": "16_farrel",
+    "confidence": 1.0,
+    "status": "recognized",
+    "bbox": [
+      196,
+      157,
+      242,
+      242
+    ],
+    "detection_time": 72.19,
+    "extraction_time": 0.24,
+    "prediction_time": 3.89,
+    "timestamp": "2026-05-06T00:22:27.997098",
+    "model_accuracy": 95.42,
+    "model_f1_score": 95.38,
+    "model_precision": 96.02,
+    "model_recall": 95.42
+  },
+  {
+    "name": "13_erfanhasibuan",
+    "confidence": 1.0,
+    "status": "recognized",
+    "bbox": [
+      166,
+      115,
+      360,
+      360
+    ],
+    "detection_time": 31.74,
+    "extraction_time": 0.11,
+    "prediction_time": 3.25,
+    "timestamp": "2026-05-06T00:27:27.997098",
+    "model_accuracy": 95.42,
+    "model_f1_score": 95.38,
+    "model_precision": 96.02,
+    "model_recall": 95.42
   },
   {
     "name": "9_muhammadarungaditya",
-    "confidence": 0.6,
+    "confidence": 1.0,
     "status": "recognized",
     "bbox": [
-      243,
-      137,
-      254,
-      254
+      208,
+      116,
+      262,
+      262
     ],
-    "detection_time": 30.12,
-    "extraction_time": 0.2,
-    "prediction_time": 6.16,
-    "timestamp": "2026-05-05T15:15:42.725993",
-    "model_accuracy": 66.67,
-    "model_f1_score": 61.11,
-    "model_precision": 58.33,
-    "model_recall": 66.67
+    "detection_time": 30.02,
+    "extraction_time": 0.09,
+    "prediction_time": 4.09,
+    "timestamp": "2026-05-06T00:32:27.997098",
+    "model_accuracy": 95.42,
+    "model_f1_score": 95.38,
+    "model_precision": 96.02,
+    "model_recall": 95.42
   },
   {
-    "name": "9_muhammadarungaditya",
-    "confidence": 0.6,
+    "name": "11_hasimsubianto",
+    "confidence": 1.0,
     "status": "recognized",
     "bbox": [
-      233,
-      142,
-      249,
-      249
+      224,
+      131,
+      225,
+      225
     ],
-    "detection_time": 31.16,
-    "extraction_time": 1.45,
-    "prediction_time": 12.74,
-    "timestamp": "2026-05-05T15:15:34.629401",
-    "model_accuracy": 66.67,
-    "model_f1_score": 61.11,
-    "model_precision": 58.33,
-    "model_recall": 66.67
-  },
-  {
-    "name": "9_muhammadarungaditya",
-    "confidence": 0.6,
-    "status": "recognized",
-    "bbox": [
-      264,
-      175,
-      254,
-      254
-    ],
-    "detection_time": 44.18,
-    "extraction_time": 1.58,
-    "prediction_time": 15.14,
-    "timestamp": "2026-05-05T15:15:25.994342",
-    "model_accuracy": 66.67,
-    "model_f1_score": 61.11,
-    "model_precision": 58.33,
-    "model_recall": 66.67
+    "detection_time": 31.94,
+    "extraction_time": 0.09,
+    "prediction_time": 3.39,
+    "timestamp": "2026-05-06T00:37:27.997098",
+    "model_accuracy": 95.42,
+    "model_f1_score": 95.38,
+    "model_precision": 96.02,
+    "model_recall": 95.42
   }
 ]

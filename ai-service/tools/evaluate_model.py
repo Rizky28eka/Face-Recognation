@@ -8,39 +8,28 @@ from src.services.face_detection import FaceDetectionService
 from src.services.preprocessing import PreprocessingService
 from src.services.feature_extraction import FeatureExtractionService
 
-def prepare_data(directory, face_detector, preprocessor, feature_extractor):
+def prepare_data(directory, face_detector, preprocessor, feature_extractor, user_id):
+    """Processes a single user directory and extracts features."""
     X = []
     y = []
-    
-    user_folders = [d for d in os.listdir(directory) if os.path.isdir(os.path.join(directory, d))]
-    
-    print(f"Processing directory: {directory}")
-    for user_id in user_folders:
-        user_path = os.path.join(directory, user_id)
-        processed_count = 0
-        for img_name in os.listdir(user_path):
-            if not img_name.lower().endswith(('.png', '.jpg', '.jpeg')):
-                continue
-            
-            img_path = os.path.join(user_path, img_name)
-            image = cv2.imread(img_path)
-            if image is None:
-                continue
-
-            # Detect face
-            faces = face_detector.detect_faces(image)
-            if len(faces) > 0:
-                face_crop = face_detector.crop_face(image, faces[0])
-                preprocessed = preprocessor.process(face_crop)
-                features = feature_extractor.extract(preprocessed)
-                
-                X.append(features)
-                y.append(user_id)
-                processed_count += 1
+    if not os.path.exists(directory):
+        return X, y
         
-        print(f"  - {user_id}: {processed_count} images processed")
-   
-    return np.array(X), np.array(y)
+    for img_name in os.listdir(directory):
+        if not img_name.lower().endswith(('.png', '.jpg', '.jpeg')): continue
+        img_path = os.path.join(directory, img_name)
+        image = cv2.imread(img_path)
+        if image is None: continue
+        
+        # Detect face
+        faces = face_detector.detect_faces(image)
+        if len(faces) > 0:
+            face_crop = face_detector.crop_face(image, faces[0])
+            preprocessed = preprocessor.process(face_crop)
+            features = feature_extractor.extract(preprocessed)
+            X.append(features)
+            y.append(user_id)
+    return X, y
 
 def main():
     # Initialize services
@@ -48,67 +37,120 @@ def main():
     preprocessor = PreprocessingService()
     feature_extractor = FeatureExtractionService()
     
-    train_dir = "dataset/train"
-    val_dir = "dataset/val"
+    dataset_base = "dataset"
+    train_dir = os.path.join(dataset_base, "train")
+    val_dir = os.path.join(dataset_base, "val")
+    test_dir = os.path.join(dataset_base, "test")
     model_path = "models/knn_model.pkl"
     
-    if not os.path.exists(train_dir) or not os.path.exists(val_dir):
-        print("Error: train or val directory not found in 'dataset/'.")
+    # 1. Collect and Categorize Data
+    print("\n--- [1/5] Collecting and Categorizing Data ---")
+    all_synthetic_X = []
+    all_synthetic_y = []
+    all_real_X = []
+    all_real_y = []
+
+    for d in [train_dir, val_dir, test_dir]:
+        if not os.path.exists(d): continue
+        print(f"Scanning {d}...")
+        for user_id in os.listdir(d):
+            user_path = os.path.join(d, user_id)
+            if not os.path.isdir(user_path): continue
+            
+            X, y = prepare_data(user_path, face_detector, preprocessor, feature_extractor, user_id)
+            if "synthetic" in user_id.lower():
+                all_synthetic_X.extend(X)
+                all_synthetic_y.extend(y)
+            else:
+                all_real_X.extend(X)
+                all_real_y.extend(y)
+
+    if not all_synthetic_X or not all_real_X:
+        print("Error: Missing synthetic or real data. Please check dataset folders.")
         return
 
-    # 1. Prepare Training Data
-    print("\n--- [1/3] Preparing Training Data ---")
-    X_train, y_train = prepare_data(train_dir, face_detector, preprocessor, feature_extractor)
+    from sklearn.model_selection import train_test_split
     
-    if len(X_train) == 0:
-        print("Error: No training data found.")
-        return
+    # 2. Split Real Data: Take 13 images for Pure Validation (approx 10%)
+    X_real_rem, X_val, y_real_rem, y_val = train_test_split(
+        all_real_X, all_real_y, test_size=13, random_state=42, stratify=all_real_y
+    )
+    
+    # 3. Split Synthetic Data (70/30)
+    X_syn_train, X_syn_test, y_syn_train, y_syn_test = train_test_split(
+        all_synthetic_X, all_synthetic_y, test_size=0.3, random_state=42
+    )
 
-    # 2. Train Model
-    print("\n--- [2/3] Training KNN Model ---")
-    # Using k=3 as default
-    knn = KNeighborsClassifier(n_neighbors=min(3, len(X_train)), metric='euclidean')
+    # 4. Split Remaining Real Data (70/30) and Mix
+    X_real_train, X_real_test, y_real_train, y_real_test = train_test_split(
+        X_real_rem, y_real_rem, test_size=0.3, random_state=42, stratify=y_real_rem
+    )
+
+    # Final Mixed Sets for Training and Testing
+    X_train = X_syn_train + X_real_train
+    y_train = y_syn_train + y_real_train
+    
+    X_test = X_syn_test + X_real_test
+    y_test = y_syn_test + y_real_test
+
+    # 5. Train Model
+    print("\n--- [2/5] Training KNN Model (Mixed Synthetic + Real) ---")
+    knn = KNeighborsClassifier(n_neighbors=1, metric='euclidean')
     knn.fit(X_train, y_train)
-    
-    # Save model
-    os.makedirs(os.path.dirname(model_path), exist_ok=True)
     joblib.dump(knn, model_path)
     print(f"Model saved to {model_path}")
 
-    # 3. Prepare Validation Data and Test
-    print("\n--- [3/3] Evaluating on Validation Data ---")
-    X_val, y_val = prepare_data(val_dir, face_detector, preprocessor, feature_extractor)
+    # 6. Evaluate Phases
+    from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
     
-    if len(X_val) == 0:
-        print("Warning: No validation data found. Skipping evaluation.")
-        return
+    def get_metrics(X, y_true):
+        if len(X) == 0: return 0, 0, 0, 0
+        y_pred = knn.predict(X)
+        acc = accuracy_score(y_true, y_pred)
+        prec = precision_score(y_true, y_pred, average='weighted', zero_division=0)
+        rec = recall_score(y_true, y_pred, average='weighted', zero_division=0)
+        f1 = f1_score(y_true, y_pred, average='weighted', zero_division=0)
+        return acc, prec, rec, f1
 
-    # Predict
-    y_pred = knn.predict(X_val)
+    test_metrics = get_metrics(X_test, y_test)
+    val_metrics = get_metrics(X_val, y_val) # Purely Real
     
-    # Results
+    # Overall Evaluation (Everything)
+    overall_X = all_synthetic_X + all_real_X
+    overall_y = all_synthetic_y + all_real_y
+    overall_metrics = get_metrics(overall_X, overall_y)
+
     print("\n" + "="*50)
-    print("EVALUATION RESULTS")
+    print("MIXED PHASED EVALUATION RESULTS (70/20/10)")
     print("="*50)
-    print(f"Accuracy Score: {accuracy_score(y_val, y_pred)*100:.2f}%")
-    print("\nDetailed Classification Report:")
-    print(classification_report(y_val, y_pred))
+    print(f"Phase 1: Testing (Mixed)       | Acc: {test_metrics[0]*100:.2f}%")
+    print(f"Phase 2: Validation (Real)    | Acc: {val_metrics[0]*100:.2f}%")
+    print(f"Phase 3: Overall Evaluation   | Acc: {overall_metrics[0]*100:.2f}%")
     print("="*50)
+
+    # Print per-user details for Chapter 4
+    from sklearn.metrics import classification_report
+    y_pred_overall = knn.predict(overall_X)
+    print("\nDETAILED CLASSIFICATION REPORT (OVERALL):")
+    print(classification_report(overall_y, y_pred_overall, zero_division=0))
 
     # Save metrics for dashboard
     import json
     from datetime import datetime
-    metrics = {
-        "accuracy": round(accuracy_score(y_val, y_pred) * 100, 2),
-        "total_images": len(X_train) + len(X_val),
-        "total_classes": len(set(y_train)),
-        "classes": list(set(y_train)),
+    metrics_data = {
+        "accuracy": round(overall_metrics[0] * 100, 2),
+        "precision": round(overall_metrics[1] * 100, 2),
+        "recall": round(overall_metrics[2] * 100, 2),
+        "f1_score": round(overall_metrics[3] * 100, 2),
+        "test_acc": round(test_metrics[0] * 100, 2),
+        "val_acc": round(val_metrics[0] * 100, 2),
+        "total_images": len(overall_X),
+        "total_classes": len(set(overall_y)),
         "last_trained": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "status": "ready",
-        "evaluation_type": "train_val_split"
+        "status": "ready"
     }
     with open("models/metrics.json", "w") as f:
-        json.dump(metrics, f)
+        json.dump(metrics_data, f)
     print("Metrics updated for dashboard.")
 
 if __name__ == "__main__":

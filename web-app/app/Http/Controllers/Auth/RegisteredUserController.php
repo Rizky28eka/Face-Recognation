@@ -3,16 +3,14 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Branch;
 use App\Models\User;
-use App\Models\Tenant;
-use Illuminate\Support\Str;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
-use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -34,24 +32,27 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name'         => 'required|string|max:255',
             'company_name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'email'        => 'required|string|lowercase|email|max:255|unique:' . User::class,
+            'password'     => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        // Create a new Tenant for the owner using the provided company name
-        $tenant = Tenant::create([
-            'name' => $request->company_name,
-            'slug' => Str::slug($request->company_name) . '-' . Str::random(5),
+        // Buat branch default untuk perusahaan baru
+        $branch = Branch::create([
+            'name'           => $request->company_name,
+            'check_in_time'  => '08:00',
+            'check_out_time' => '17:00',
+            'radius'         => 100,
+            'is_active'      => true,
         ]);
 
         $user = User::create([
-            'tenant_id' => $tenant->id,
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => 'owner',
+            'name'      => $request->name,
+            'email'     => $request->email,
+            'password'  => Hash::make($request->password),
+            'role'      => 'owner',
+            'branch_id' => $branch->id,
         ]);
 
         event(new Registered($user));

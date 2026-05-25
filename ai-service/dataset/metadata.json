@@ -1,89 +1,14 @@
 {
-  "generated_at": "2026-05-21T23:55:42.868326",
-  "config": {
-    "total_users": 12,
-    "samples_per_user": 30
-  },
+  "last_updated": "2026-05-25T16:40:15",
   "stats": {
-    "total_classes": 12,
-    "total_images": 360,
-    "splits": {
-      "train": 360,
-      "val": 60
-    }
+    "total_classes": 1,
+    "total_images": 8
   },
   "classes": [
     {
-      "class": "6_affen",
-      "saved": 30,
-      "failed": 0,
-      "hash": "real_face"
-    },
-    {
-      "class": "7_akbar",
-      "saved": 30,
-      "failed": 0,
-      "hash": "real_face"
-    },
-    {
-      "class": "8_arung",
-      "saved": 30,
-      "failed": 0,
-      "hash": "real_face"
-    },
-    {
-      "class": "9_dwicky",
-      "saved": 30,
-      "failed": 0,
-      "hash": "real_face"
-    },
-    {
-      "class": "10_eka",
-      "saved": 30,
-      "failed": 0,
-      "hash": "real_face"
-    },
-    {
-      "class": "11_erfan",
-      "saved": 30,
-      "failed": 0,
-      "hash": "real_face"
-    },
-    {
-      "class": "12_farrel",
-      "saved": 30,
-      "failed": 0,
-      "hash": "real_face"
-    },
-    {
-      "class": "13_fatah",
-      "saved": 30,
-      "failed": 0,
-      "hash": "real_face"
-    },
-    {
-      "class": "14_gilbram",
-      "saved": 30,
-      "failed": 0,
-      "hash": "real_face"
-    },
-    {
-      "class": "15_hasim",
-      "saved": 30,
-      "failed": 0,
-      "hash": "real_face"
-    },
-    {
-      "class": "16_iqbal",
-      "saved": 30,
-      "failed": 0,
-      "hash": "real_face"
-    },
-    {
-      "class": "17_rahmat",
-      "saved": 30,
-      "failed": 0,
-      "hash": "real_face"
+      "class": "3_eka",
+      "saved": 8,
+      "failed": 0
     }
   ]
 }

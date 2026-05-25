@@ -130,12 +130,18 @@ export default function Show({ attendance }: Props) {
                                             Hasil Scan Wajah
                                         </p>
                                         <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 group">
-                                            <img
-                                                src={`/storage/${attendance.image_path}`}
-                                                alt="Verification Scan"
-                                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                                onLoad={handleImageLoad}
-                                            />
+                                            {attendance.image_path ? (
+                                                <img
+                                                    src={`/storage/${attendance.image_path}`}
+                                                    alt="Verification Scan"
+                                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                    onLoad={handleImageLoad}
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+                                                    Tidak ada foto
+                                                </div>
+                                            )}
 
                                             {/* Visual Bounding Box Overlay */}
                                             {attendance.bbox &&

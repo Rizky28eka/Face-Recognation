@@ -32,7 +32,6 @@ interface User {
     face_path: string | null;
     is_face_registered: boolean;
     is_wfh: boolean;
-    tenant_id: number;
     created_at: string;
     branch?: { name: string };
     shift?: {
@@ -318,7 +317,7 @@ export default function Show({ employee, recentAttendances = [] }: Props) {
                                             </p>
                                             <div className="flex items-center gap-2 text-gray-700 font-medium text-sm">
                                                 <Building className="w-4 h-4 text-gray-400 shrink-0" />
-                                                Tenant ID #{employee.tenant_id}
+                                                {employee.branch?.name ?? '-'}
                                             </div>
                                         </div>
                                     </div>

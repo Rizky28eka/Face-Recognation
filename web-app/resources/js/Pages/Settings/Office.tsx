@@ -18,7 +18,6 @@ import { toast } from 'sonner';
 
 interface OfficeSetting {
     id: number;
-    tenant_id: number;
     latitude: string;
     longitude: string;
     radius: number;

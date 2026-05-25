@@ -37,6 +37,52 @@ async def train_model():
     knn_service.load_model()
     return result
 
+@router.post("/add-unknown-test")
+async def add_unknown_test(file: UploadFile = File(...)):
+    """
+    Upload foto orang yang TIDAK terdaftar ke dataset/test/unknown/.
+    Dipakai untuk menghitung FAR (False Acceptance Rate) saat evaluasi.
+    Foto ini tidak masuk ke training — hanya untuk pengujian penolakan.
+    """
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Invalid file format.")
+
+    contents = await file.read()
+    nparr    = np.frombuffer(contents, np.uint8)
+    image    = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    if image is None:
+        raise HTTPException(status_code=400, detail="Could not decode image.")
+
+    faces = face_detector.detect_faces(image)
+    if not faces:
+        raise HTTPException(status_code=422, detail="Tidak ada wajah terdeteksi dalam foto.")
+
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+    unknown_dir  = os.path.join(project_root, settings.DATASET_PATH, "test", "unknown")
+    os.makedirs(unknown_dir, exist_ok=True)
+
+    existing = len([f for f in os.listdir(unknown_dir) if f.lower().endswith(('.jpg', '.jpeg', '.png'))])
+    filename  = f"unknown_{existing + 1:04d}.jpg"
+    save_path = os.path.join(unknown_dir, filename)
+    cv2.imwrite(save_path, image)
+
+    return {
+        "status":  "success",
+        "message": f"Foto unknown #{existing + 1} disimpan. Jalankan /train untuk memperbarui FAR.",
+        "total_unknown": existing + 1,
+        "saved_to": save_path,
+    }
+
+@router.get("/unknown-test/count")
+async def get_unknown_test_count():
+    """Cek jumlah foto unknown yang tersedia untuk evaluasi FAR."""
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+    unknown_dir  = os.path.join(project_root, settings.DATASET_PATH, "test", "unknown")
+    if not os.path.isdir(unknown_dir):
+        return {"count": 0}
+    photos = [f for f in os.listdir(unknown_dir) if f.lower().endswith(('.jpg', '.jpeg', '.png'))]
+    return {"count": len(photos), "path": unknown_dir}
+
 @router.get("/faces/status")
 async def get_status():
     """
@@ -165,7 +211,7 @@ async def get_status():
         "inference_logs": inference_logger.get_recent_logs(),
         "testing_reports": {
             "black_box": [
-                {"no": 1, "modul": "Autentikasi", "pengujian": "Login Multi-role", "skenario": "Input email & password benar", "input": "admin@sikawan.com", "harapan": "Masuk ke dashboard superadmin", "aktual": "Session Login Aktif" if system_resources['cpu_percent'] > 0 else "Offline", "status": "Berhasil"},
+                {"no": 1, "modul": "Autentikasi", "pengujian": "Login Multi-role", "skenario": "Input email & password benar", "input": "admin@sikawan.com", "harapan": "Masuk ke dashboard owner", "aktual": "Session Login Aktif" if system_resources['cpu_percent'] > 0 else "Offline", "status": "Berhasil"},
                 {"no": 2, "modul": "AI Core", "pengujian": "Registrasi Wajah", "skenario": "Cek integritas dataset training", "input": f"Folder {settings.DATASET_PATH}", "harapan": "Folder dataset ditemukan", "aktual": f"Ditemukan {total_classes} kelas" if dataset_exists else "Folder Hilang", "status": "Berhasil" if dataset_exists else "Gagal"},
                 {"no": 3, "modul": "AI Core", "pengujian": "Model K-NN", "skenario": "Cek ketersediaan file binary model", "input": settings.MODEL_PATH, "harapan": "File .pkl dapat dimuat", "aktual": "Model Terdeteksi" if model_exists else "File Kosong", "status": "Berhasil" if model_exists else "Gagal"},
                 {"no": 4, "modul": "Presensi", "pengujian": "Validasi Wajah", "skenario": f"Deteksi Wajah (Haar Cascade)", "input": "Input Stream Image", "harapan": "Bounding Box teridentifikasi", "aktual": "Cascade XML Ready" if haarcascade_exists else "XML Missing", "status": "Berhasil" if haarcascade_exists else "Gagal"}
@@ -237,13 +283,35 @@ async def update_ai_settings(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+def _parse_branch_ids(branch_user_ids_str: str | None) -> set[str]:
+    """Parse JSON string of user IDs into a set of folder name prefixes like {'7', '12'}."""
+    if not branch_user_ids_str:
+        return set()
+    try:
+        ids = json.loads(branch_user_ids_str)
+        return {str(i) for i in ids}
+    except Exception:
+        return set()
+
+def _is_in_branch(predicted_name: str, allowed_ids: set[str]) -> bool:
+    """Check if predicted folder name (e.g. '7_akbar') belongs to one of the allowed user IDs."""
+    if not allowed_ids:
+        return False
+    user_id = predicted_name.split('_')[0]
+    return user_id in allowed_ids
+
 @router.post("/predict")
-async def predict_face(file: UploadFile = File(...)):
+async def predict_face(
+    file: UploadFile = File(...),
+    branch_user_ids: str = Form(None),
+):
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="Invalid file format.")
 
     if not knn_service.is_model_available():
         raise HTTPException(status_code=400, detail="Model not found.")
+
+    allowed_ids = _parse_branch_ids(branch_user_ids)
 
     contents = await file.read()
     nparr = np.frombuffer(contents, np.uint8)
@@ -273,9 +341,10 @@ async def predict_face(file: UploadFile = File(...)):
     if len(faces) == 0:
         inference_logger.log("unknown", 0.0, "unrecognized", det_time, 0, 0, None, metrics=metrics)
         return {
-            "name": "unknown", 
-            "confidence": 0.0, 
-            "status": "unrecognized", 
+            "name": "unknown",
+            "confidence": 0.0,
+            "status": "unrecognized",
+            "reason": "no_face",
             "bbox": None,
             "accuracy": metrics.get("accuracy"),
             "f1_score": metrics.get("f1_score")
@@ -298,7 +367,13 @@ async def predict_face(file: UploadFile = File(...)):
         pre_time = time.time() - start_pre
         
         print(f"[DEBUG ROUTES] Final Match -> Name: {name}, Confidence: {confidence:.4f}, Dist: {avg_distance:.2f}")
-        
+
+        # Jika ada filter branch, pastikan hasil prediksi berasal dari branch yang sama
+        not_in_branch = allowed_ids and not _is_in_branch(name, allowed_ids)
+        if not_in_branch:
+            print(f"[BRANCH FILTER] '{name}' bukan dari branch ini ({allowed_ids}), dianggap unknown")
+            confidence = 0.0
+
         if confidence >= settings.RECOGNITION_THRESHOLD:
             # Create annotated image for storage
             annotated_image = image.copy()
@@ -350,11 +425,13 @@ async def predict_face(file: UploadFile = File(...)):
             _, buffer = cv2.imencode('.jpg', annotated_image)
             annotated_base64 = base64.b64encode(buffer).decode('utf-8')
 
+            reason = "not_in_branch" if not_in_branch else "low_confidence"
             inference_logger.log("unknown", round(confidence, 2), "unrecognized", det_time, ext_time, pre_time, face_box, metrics=metrics)
             return {
-                "name": "unknown", 
-                "confidence": round(confidence, 2), 
-                "status": "unrecognized", 
+                "name": "unknown",
+                "confidence": round(confidence, 2),
+                "status": "unrecognized",
+                "reason": reason,
                 "bbox": face_box,
                 "annotated_image": annotated_base64,
                 "accuracy": metrics.get("accuracy"),
@@ -368,11 +445,12 @@ async def predict_face(file: UploadFile = File(...)):
 async def add_face(
     name: str = Form(...),
     index: int = Form(0),
-    file: UploadFile = File(...)
+    file: UploadFile = File(...),
+    branch_user_ids: str = Form(None),
 ):
     """
-    Tambahkan foto wajah baru ke dataset training.
-    File akan disimpan di dataset/train/{name}/ dan dataset/val/{name}/.
+    Tambahkan foto wajah baru ke dataset/raw/{name}/.
+    Split train/val/test dilakukan saat training, bukan saat penyimpanan.
     """
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="Invalid file format. Only images are allowed.")
@@ -384,76 +462,59 @@ async def add_face(
     if image is None:
         raise HTTPException(status_code=400, detail="Could not decode image.")
 
-    # Deteksi wajah terlebih dahulu
     faces = face_detector.detect_faces(image)
     if len(faces) == 0:
         raise HTTPException(status_code=422, detail="Tidak ada wajah terdeteksi dalam foto. Pastikan wajah terlihat jelas.")
 
-    # Sanitize name untuk dijadikan nama folder
     safe_name = name.strip().replace(" ", "_").lower()
 
     # ================================================================
-    # CEK DUPLIKASI WAJAH — Jalankan di SETIAP foto (bukan hanya index 0)
-    # Mencegah 1 wajah mendaftarkan lebih dari 1 akun.
+    # CEK DUPLIKASI WAJAH
+    # Hanya berjalan jika model tersedia DAN punya lebih dari 1 kelas.
+    # Model dengan 1 kelas selalu memprediksi kelas itu → bukan duplikasi nyata.
     # ================================================================
-    if knn_service.is_model_available():
+    if knn_service.is_model_available() and len(knn_service.model.classes_) > 1:
         face_crop_temp = face_detector.crop_face(image, faces[0])
         preprocessed_temp = preprocessor.process(face_crop_temp)
         features_temp = feature_extractor.extract(preprocessed_temp)
-        
-        predicted_name, confidence, avg_distance = knn_service.predict(features_temp)
-        
-        print(f"[DUPLIKASI CHECK] Foto index={index} | Prediksi: '{predicted_name}' | Confidence: {confidence:.4f} | Avg Distance: {avg_distance:.2f} | Mendaftar sebagai: '{safe_name}'")
-        
-        # Wajah ini sangat mirip dengan wajah yang sudah terdaftar atas nama ORANG LAIN
-        # Threshold avg_distance < 2800: jarak yang sangat dekat (hampir pasti wajah yang sama)
-        if avg_distance < 2800 and predicted_name != safe_name:
-            print(f"[DUPLIKASI DITOLAK] Wajah cocok dengan '{predicted_name}' (distance={avg_distance:.2f}), bukan '{safe_name}'")
+
+        predicted_name, confidence, _ = knn_service.predict(features_temp)
+
+        print(f"[DUPLIKASI CHECK] index={index} | Prediksi: '{predicted_name}' | Confidence: {confidence:.4f} | Mendaftar sebagai: '{safe_name}'")
+
+        allowed_ids = _parse_branch_ids(branch_user_ids)
+        is_same_branch_duplicate = _is_in_branch(predicted_name, allowed_ids) if allowed_ids else False
+
+        if confidence >= 0.85 and predicted_name != safe_name and is_same_branch_duplicate:
+            print(f"[DUPLIKASI DITOLAK] Wajah cocok dengan '{predicted_name}' (confidence={confidence:.4f})")
             raise HTTPException(
-                status_code=409, 
+                status_code=409,
                 detail=f"Wajah ini terdeteksi sudah terdaftar atas nama akun lain ({predicted_name.split('_')[0]}). Satu wajah hanya boleh memiliki satu akun."
             )
 
-    # Buat path absolut ke dataset (2 level up dari file routes.py: api/ -> src/ -> root)
+    # Simpan ke dataset/raw/{safe_name}/ — split terjadi saat training
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
     base_dataset_path = os.path.join(project_root, settings.DATASET_PATH)
-    
-    train_dir = os.path.join(base_dataset_path, 'train', safe_name)
-    val_dir = os.path.join(base_dataset_path, 'val', safe_name)
+    raw_dir = os.path.join(base_dataset_path, 'raw', safe_name)
 
-    os.makedirs(train_dir, exist_ok=True)
-    os.makedirs(val_dir, exist_ok=True)
+    os.makedirs(raw_dir, exist_ok=True)
 
-    # Jika ini adalah foto pertama dari sesi registrasi (index 0), hapus semua foto sebelumnya
+    # index=0 → foto pertama sesi baru, bersihkan foto lama
     if index == 0:
-        for folder in [train_dir, val_dir]:
-            for filename in os.listdir(folder):
-                file_path = os.path.join(folder, filename)
-                try:
-                    if os.path.isfile(file_path) or os.path.islink(file_path):
-                        os.unlink(file_path)
-                    elif os.path.isdir(file_path):
-                        shutil.rmtree(file_path)
-                except Exception as e:
-                    print(f'Failed to delete {file_path}. Reason: {e}')
+        for fname in os.listdir(raw_dir):
+            fpath = os.path.join(raw_dir, fname)
+            try:
+                if os.path.isfile(fpath):
+                    os.unlink(fpath)
+            except Exception as e:
+                print(f'Failed to delete {fpath}: {e}')
 
-    # Hitung jumlah foto yang sudah ada (bisa 0 jika index=0)
-    existing = len([f for f in os.listdir(train_dir) if f.endswith(('.jpg', '.jpeg', '.png'))])
-    
-    # Simpan ke train (80%) dan val (20%) - ambil setiap 5 foto ke val
-    filename = f"{safe_name}_{existing + 1:04d}.jpg"
-    train_path = os.path.join(train_dir, filename)
-    
-    # Deteksi wajah untuk validasi saja
-    face_detector.crop_face(image, faces[0])
-    
-    # Simpan gambar aslinya, agar saat ditraining face detector bisa menemukan wajah dengan benar (mencegah double-crop distortion)
-    cv2.imwrite(train_path, image)
+    existing = len([f for f in os.listdir(raw_dir) if f.lower().endswith(('.jpg', '.jpeg', '.png'))])
+    filename  = f"{safe_name}_{existing + 1:04d}.jpg"
+    save_path = os.path.join(raw_dir, filename)
 
-    # Salin ke val juga untuk validasi
-    if (existing + 1) % 5 == 0 or existing == 0:
-        val_path = os.path.join(val_dir, filename)
-        shutil.copy2(train_path, val_path)
+    # Simpan gambar asli (bukan crop) agar face detector bisa re-detect saat training
+    cv2.imwrite(save_path, image)
 
     # Update metadata.json
     metadata_path = os.path.join(base_dataset_path, "metadata.json")
@@ -461,25 +522,17 @@ async def add_face(
         try:
             with open(metadata_path, "r") as f:
                 meta = json.load(f)
-            
             classes = meta.get("classes", [])
             user_entry = next((c for c in classes if c.get("class") == safe_name), None)
-            
             if user_entry:
                 old_saved = user_entry.get("saved", 0)
                 if (existing + 1) > old_saved:
                     meta["stats"]["total_images"] += ((existing + 1) - old_saved)
                     user_entry["saved"] = existing + 1
             else:
-                classes.append({
-                    "class": safe_name,
-                    "saved": existing + 1,
-                    "failed": 0,
-                    "hash": "user_registration"
-                })
+                classes.append({"class": safe_name, "saved": existing + 1, "failed": 0})
                 meta["stats"]["total_classes"] = len(classes)
                 meta["stats"]["total_images"] += 1
-            
             meta["classes"] = classes
             with open(metadata_path, "w") as f:
                 json.dump(meta, f, indent=2)
@@ -491,5 +544,5 @@ async def add_face(
         "message": f"Wajah '{name}' berhasil ditambahkan ke dataset.",
         "name": safe_name,
         "photo_count": existing + 1,
-        "saved_to": train_path
+        "saved_to": save_path
     }

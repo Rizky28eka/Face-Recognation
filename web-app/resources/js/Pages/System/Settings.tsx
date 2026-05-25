@@ -158,7 +158,7 @@ export default function SystemSettings({ settings, flash }: Props) {
                                                             e.target.value,
                                                         )
                                                     }
-                                                    placeholder="Contoh: Sikawan AI"
+                                                    placeholder="Contoh: Sikawan"
                                                     className="max-w-md h-11 md:h-12 rounded-xl bg-gray-50 border-gray-200"
                                                 />
                                                 {errors.app_name && (

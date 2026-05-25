@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Shift;
 use App\Models\Branch;
-use App\Models\Tenant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -20,13 +19,7 @@ class KaryawanController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
         
-        // Only owner can see their employees
-        if ($user->role !== 'owner') {
-            abort(403, 'Unauthorized action.');
-        }
-
-        $karyawan = User::where('tenant_id', $user->tenant_id)
-            ->where('role', 'karyawan')
+        $karyawan = User::where('role', 'karyawan')
             ->latest()
             ->paginate(10);
 
@@ -39,10 +32,15 @@ class KaryawanController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        $tenant = $user->tenant;
+
+        if (!$user->invite_token) {
+            $user->update(['invite_token' => \Illuminate\Support\Str::random(32)]);
+        }
+
+        $inviteUrl = route('invite.show', $user->invite_token);
 
         return Inertia::render('Karyawan/Create', [
-            'invite_url' => $tenant->getInviteUrl(),
+            'invite_url' => $inviteUrl,
         ]);
     }
 
@@ -50,10 +48,7 @@ class KaryawanController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        
-        $tenant = Tenant::find($user->tenant_id);
-        $tenant->registration_token = \Illuminate\Support\Str::random(32);
-        $tenant->save();
+        $user->update(['invite_token' => \Illuminate\Support\Str::random(32)]);
 
         return redirect()->route('karyawan.create')->with('success', 'Link undangan berhasil diperbarui.');
     }
@@ -76,7 +71,6 @@ class KaryawanController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => 'karyawan',
-            'tenant_id' => $user->tenant_id,
             'shift_id' => $request->shift_id,
             'branch_id' => $request->branch_id,
         ]);
@@ -89,10 +83,7 @@ class KaryawanController extends Controller
         /** @var \App\Models\User $currentUser */
         $currentUser = Auth::user();
 
-        // Security check
-        if ($user->tenant_id !== $currentUser->tenant_id) {
-            abort(403);
-        }
+
 
         $attendances = \App\Models\Attendance::where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
@@ -110,12 +101,10 @@ class KaryawanController extends Controller
         /** @var \App\Models\User $currentUser */
         $currentUser = Auth::user();
 
-        if ($user->tenant_id !== $currentUser->tenant_id) {
-            abort(403);
-        }
 
-        $shifts = Shift::where('tenant_id', $currentUser->tenant_id)->get();
-        $branches = Branch::where('tenant_id', $currentUser->tenant_id)->get();
+
+        $shifts = Shift::get();
+        $branches = Branch::get();
 
         return Inertia::render('Karyawan/Edit', [
             'employee' => $user,
@@ -129,9 +118,7 @@ class KaryawanController extends Controller
         /** @var \App\Models\User $currentUser */
         $currentUser = Auth::user();
 
-        if ($user->tenant_id !== $currentUser->tenant_id) {
-            abort(403);
-        }
+
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -162,7 +149,7 @@ class KaryawanController extends Controller
         /** @var \App\Models\User $currentUser */
         $currentUser = Auth::user();
 
-        if ($user->tenant_id !== $currentUser->tenant_id || $user->id === $currentUser->id) {
+        if ($user->id === $currentUser->id) {
             abort(403);
         }
 
@@ -176,9 +163,7 @@ class KaryawanController extends Controller
         /** @var \App\Models\User $currentUser */
         $currentUser = Auth::user();
 
-        if ($user->tenant_id !== $currentUser->tenant_id) {
-            abort(403);
-        }
+
 
         $request->validate([
             'is_wfh' => 'required|boolean',
@@ -196,10 +181,7 @@ class KaryawanController extends Controller
         /** @var \App\Models\User $currentUser */
         $currentUser = Auth::user();
 
-        // Security check
-        if ($user->tenant_id !== $currentUser->tenant_id) {
-            abort(403);
-        }
+
 
         $attendances = \App\Models\Attendance::where('user_id', $user->id)
             ->orderBy('attended_at', 'desc')
@@ -209,7 +191,7 @@ class KaryawanController extends Controller
         $pdf = Pdf::loadView('pdf.employee-detail', [
             'employee' => $user->load(['shift', 'branch']),
             'attendances' => $attendances,
-            'tenant' => $currentUser->tenant
+            'tenant' => ['name' => \App\Models\Setting::get('app_name', 'Sikawan')]
         ]);
 
         return $pdf->download("Detail_Karyawan_{$user->id}.pdf");

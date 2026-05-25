@@ -59,7 +59,17 @@ class ProfileController extends Controller
         $uniqueName = $user->id . '_' . preg_replace('/[^A-Za-z0-9]/', '', $user->name);
         $absolutePath = storage_path('app/public/' . $path);
         
-        $result = $this->faceService->registerFace($uniqueName, $absolutePath, $request->index);
+        // Kirim daftar user ID sesama branch agar duplikat check tidak lintas perusahaan
+        $branchUserIds = [];
+        if ($user->branch_id) {
+            $branchUserIds = \App\Models\User::where('branch_id', $user->branch_id)
+                ->where('role', 'karyawan')
+                ->where('id', '!=', $user->id)
+                ->pluck('id')
+                ->toArray();
+        }
+
+        $result = $this->faceService->registerFace($uniqueName, $absolutePath, $request->index, $branchUserIds);
 
         if (isset($result['status']) && $result['status'] === 'success') {
             return response()->json([
@@ -102,7 +112,7 @@ class ProfileController extends Controller
         // Jalankan training otomatis agar wajah baru langsung dikenali
         $this->faceService->train();
 
-        return Redirect::route('dashboard')->with('success', 'Ke-5 foto wajah berhasil dipelajari AI. Pendaftaran berhasil!');
+        return Redirect::route('dashboard')->with('success', 'Wajah berhasil terdaftar dan model AI diperbarui. Anda sudah bisa absensi!');
     }
     /**
      * Display the user's profile form.

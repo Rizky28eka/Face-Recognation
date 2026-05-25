@@ -18,7 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'face_registered' => \App\Http\Middleware\EnsureFaceIsRegistered::class,
-            'superadmin' => \App\Http\Middleware\SuperAdminOnly::class,
+            'role'            => \App\Http\Middleware\RoleMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

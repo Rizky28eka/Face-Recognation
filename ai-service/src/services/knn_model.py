@@ -3,53 +3,89 @@ import os
 import numpy as np
 from src.utils.config import settings
 
+
 class KNNModelService:
     def __init__(self):
-        self.model_path = settings.MODEL_PATH
-        self.model = None
+        self.model_path        = settings.MODEL_PATH
+        self.model             = None
+        self.distance_threshold = None  # Ditetapkan saat load_model
         self.load_model()
 
     def load_model(self):
-        """
-        Load the KNN model from disk if it exists.
-        """
         if os.path.exists(self.model_path):
             try:
                 self.model = joblib.load(self.model_path)
+                self._compute_distance_threshold()
             except Exception as e:
                 print(f"Error loading model: {e}")
                 self.model = None
         else:
             print(f"Model file not found at {self.model_path}")
+            self.model = None
+
+    def _compute_distance_threshold(self):
+        """
+        Hitung distance threshold dari training data.
+        Threshold = mean + 2*std jarak antar tetangga di training set.
+        Dipakai sebagai fallback confidence untuk single-class model.
+        """
+        if self.model is None:
+            return
+
+        try:
+            X_train = self.model._fit_X
+            distances, _ = self.model.kneighbors(X_train)
+            # Ambil jarak ke tetangga terdekat (bukan diri sendiri saat k>1)
+            # Untuk k=1 single-class, ambil jarak ke semua tetangga
+            min_distances = distances[:, 0] if distances.shape[1] > 1 else distances[:, 0]
+            mean_d = float(np.mean(min_distances))
+            std_d  = float(np.std(min_distances))
+            self.distance_threshold = mean_d + 2.0 * std_d
+            print(f"[KNN] Distance threshold set: {self.distance_threshold:.4f} (mean={mean_d:.4f} std={std_d:.4f})")
+        except Exception as e:
+            print(f"[KNN] Could not compute distance threshold: {e}")
+            self.distance_threshold = None
 
     def predict(self, feature_vector: np.ndarray):
         """
-        Predict the label and return confidence score.
-        Confidence = max(0, 1 - avg_distance / 3000), capped to [0, 1].
-        Returns (label, confidence, avg_distance).
+        Predict label dan confidence.
+
+        Multi-class: confidence dari predict_proba (vote berbobot jarak).
+        Single-class: confidence dari jarak euclidean ke tetangga terdekat
+                      (dinormalisasi: 1.0 = sangat dekat, 0.0 = sangat jauh).
+                      Ini mencegah FAR=100% pada model single-class.
         """
         if self.model is None:
             raise ValueError("Model not loaded. Please train the model first.")
 
-        X = feature_vector.reshape(1, -1)
-        label = self.model.predict(X)[0]
+        X                = feature_vector.reshape(1, -1)
+        n_classes        = len(self.model.classes_)
         distances, indices = self.model.kneighbors(X)
-        avg_distance = float(np.mean(distances))
+        min_distance     = float(distances[0][0])
+        avg_distance     = float(np.mean(distances))
+        neighbor_labels  = [self.model.classes_[self.model._y[i]] for i in indices[0]]
 
-        # Distance-based confidence: closer = higher confidence
-        confidence = max(0.0, 1.0 - (avg_distance / 3000.0))
+        if n_classes == 1:
+            # Single-class: gunakan jarak sebagai confidence
+            # confidence = exp(-dist / threshold) → 1.0 saat dist=0, turun smooth
+            label = self.model.classes_[0]
+            if self.distance_threshold and self.distance_threshold > 0:
+                confidence = float(np.exp(-min_distance / self.distance_threshold))
+            else:
+                # Fallback: normalisasi linear sederhana (jika threshold belum tersedia)
+                confidence = float(max(0.0, 1.0 - min_distance / 10.0))
+        else:
+            # Multi-class: probabilistik vote berbobot jarak
+            proba      = self.model.predict_proba(X)[0]
+            confidence = float(np.max(proba))
+            label      = self.model.classes_[int(np.argmax(proba))]
 
-        neighbor_labels = [self.model.classes_[self.model._y[i]] for i in indices[0]]
-
-        print("\n" + "="*50)
-        print(f"[DEBUG KNN] Prediksi Utama -> Label: {label}, Confidence: {confidence:.4f}")
-        print(f"[DEBUG KNN] Rata-rata Jarak (Avg Distance): {avg_distance:.2f}")
-        print("[DEBUG KNN] Detail Tetangga Terdekat (Nearest Neighbors):")
+        print("\n" + "=" * 50)
+        print(f"[KNN] Label: {label}  Confidence: {confidence:.4f}  Dist: {min_distance:.2f}  DistThresh: {self.distance_threshold:.2f if self.distance_threshold else 'N/A'}")
+        print("[KNN] Nearest Neighbors:")
         for i, (dist, lbl) in enumerate(zip(distances[0], neighbor_labels)):
-            print(f"  -> Tetangga {i+1}: Label = {lbl}, Jarak = {dist:.2f}")
-        if avg_distance > 3000:
-            print("[DEBUG KNN] PERINGATAN: Jarak terlalu jauh! Kemungkinan wajah tidak dikenal.")
-        print("="*50 + "\n")
+            print(f"  {i+1}. {lbl}  dist={dist:.2f}")
+        print("=" * 50 + "\n")
 
         return label, confidence, avg_distance
 

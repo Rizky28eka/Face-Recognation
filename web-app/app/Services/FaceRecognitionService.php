@@ -18,14 +18,17 @@ class FaceRecognitionService
     /**
      * Prediksi identitas wajah dari path file lokal.
      */
-    public function predictFromPath($filePath)
+    public function predictFromPath($filePath, array $branchUserIds = [])
     {
         try {
-            $response = Http::attach(
-                'file', 
-                file_get_contents($filePath), 
-                basename($filePath)
-            )->post("{$this->baseUrl}/predict");
+            $request = Http::attach('file', file_get_contents($filePath), basename($filePath));
+
+            $payload = [];
+            if (!empty($branchUserIds)) {
+                $payload['branch_user_ids'] = json_encode($branchUserIds);
+            }
+
+            $response = $request->post("{$this->baseUrl}/predict", $payload);
 
             return $response->json();
         } catch (\Exception $e) {
@@ -40,17 +43,19 @@ class FaceRecognitionService
      * Mengembalikan response mentah dari AI Service (termasuk error 409 duplikasi wajah).
      * Caller bertanggung jawab menginterpretasi status HTTP.
      */
-    public function registerFace($name, $filePath, $index = 0)
+    public function registerFace($name, $filePath, $index = 0, array $branchUserIds = [])
     {
         try {
+            $payload = ['name' => $name, 'index' => (int) $index];
+            if (!empty($branchUserIds)) {
+                $payload['branch_user_ids'] = json_encode($branchUserIds);
+            }
+
             $response = Http::attach(
-                'file', 
-                file_get_contents($filePath), 
+                'file',
+                file_get_contents($filePath),
                 basename($filePath)
-            )->post("{$this->baseUrl}/add-face", [
-                'name' => $name,
-                'index' => (int) $index
-            ]);
+            )->post("{$this->baseUrl}/add-face", $payload);
 
             // Teruskan respons mentah (termasuk error 409, 422, dll dari AI Service)
             $body = $response->json();

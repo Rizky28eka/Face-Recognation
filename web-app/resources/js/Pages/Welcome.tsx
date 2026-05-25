@@ -17,7 +17,7 @@ interface WelcomeProps {
     canLogin: boolean;
     canRegister: boolean;
     stats: {
-        tenants: number;
+        branches: number;
         users: number;
         attendances: number;
     };
@@ -238,7 +238,7 @@ export default function Welcome({
                             </div>
                             <div className="space-y-2">
                                 <p className="text-4xl md:text-5xl font-black">
-                                    {stats.tenants}
+                                    {stats.branches}
                                 </p>
                                 <p className="text-indigo-200 font-medium">
                                     Perusahaan

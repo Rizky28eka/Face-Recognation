@@ -188,7 +188,7 @@
         </div>
 
         <div class="footer">
-            Dokumen ini dihasilkan secara otomatis oleh sistem FaceLog {{ date('Y') }}.
+            Dokumen ini dihasilkan secara otomatis oleh sistem Sikawan {{ date('Y') }}.
         </div>
     </div>
 </body>

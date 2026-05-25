@@ -14,7 +14,7 @@ class LeaveController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
         
-        $query = Leave::with('user')->where('tenant_id', $user->tenant_id);
+        $query = Leave::with('user');
 
         if ($user->role === 'karyawan') {
             $query->where('user_id', $user->id);
@@ -40,7 +40,7 @@ class LeaveController extends Controller
         ]);
 
         $validated['user_id'] = $user->id;
-        $validated['tenant_id'] = $user->tenant_id;
+
         $validated['status'] = 'pending';
 
         Leave::create($validated);
@@ -53,9 +53,7 @@ class LeaveController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
         
-        // Only owner can approve/reject
-        if ($user->role !== 'owner') abort(403);
-        if ($leave->tenant_id !== $user->tenant_id) abort(403);
+
 
         $validated = $request->validate([
             'status' => 'required|in:approved,rejected',

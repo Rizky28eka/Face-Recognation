@@ -74,9 +74,10 @@ interface Props {
         end_date?: string;
         user_id?: string;
     };
+    role: 'owner' | 'karyawan';
 }
 
-export default function Report({ attendances, employees, filters }: Props) {
+export default function Report({ attendances, employees, filters, role }: Props) {
     const [startDate, setStartDate] = useState(filters.start_date || '');
     const [endDate, setEndDate] = useState(filters.end_date || '');
     const [userId, setUserId] = useState(filters.user_id || 'all');
@@ -198,32 +199,34 @@ export default function Report({ attendances, employees, filters }: Props) {
                                             className="h-11 border-gray-100 bg-gray-50/50 rounded-xl"
                                         />
                                     </div>
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                            Karyawan
-                                        </label>
-                                        <Select
-                                            value={userId}
-                                            onValueChange={setUserId}
-                                        >
-                                            <SelectTrigger className="h-11 border-gray-100 bg-gray-50/50 rounded-xl">
-                                                <SelectValue placeholder="Semua Karyawan" />
-                                            </SelectTrigger>
-                                            <SelectContent className="rounded-xl">
-                                                <SelectItem value="all">
-                                                    Semua Karyawan
-                                                </SelectItem>
-                                                {employees.map((emp) => (
-                                                    <SelectItem
-                                                        key={emp.id}
-                                                        value={emp.id.toString()}
-                                                    >
-                                                        {emp.name}
+                                    {role === 'owner' && (
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                                                Karyawan
+                                            </label>
+                                            <Select
+                                                value={userId}
+                                                onValueChange={setUserId}
+                                            >
+                                                <SelectTrigger className="h-11 border-gray-100 bg-gray-50/50 rounded-xl">
+                                                    <SelectValue placeholder="Semua Karyawan" />
+                                                </SelectTrigger>
+                                                <SelectContent className="rounded-xl">
+                                                    <SelectItem value="all">
+                                                        Semua Karyawan
                                                     </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
+                                                    {employees.map((emp) => (
+                                                        <SelectItem
+                                                            key={emp.id}
+                                                            value={emp.id.toString()}
+                                                        >
+                                                            {emp.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    )}
                                     <div className="flex gap-2">
                                         <Button
                                             onClick={handleFilter}
@@ -250,9 +253,11 @@ export default function Report({ attendances, employees, filters }: Props) {
                                 <Table>
                                     <TableHeader>
                                         <TableRow className="bg-gray-50/50 hover:bg-gray-50/50">
-                                            <TableHead className="py-4">
-                                                Karyawan
-                                            </TableHead>
+                                            {role === 'owner' && (
+                                                <TableHead className="py-4">
+                                                    Karyawan
+                                                </TableHead>
+                                            )}
                                             <TableHead>Waktu</TableHead>
                                             <TableHead>Metode</TableHead>
                                             <TableHead>Lokasi/Cabang</TableHead>
@@ -271,36 +276,38 @@ export default function Report({ attendances, employees, filters }: Props) {
                                                         key={attendance.id}
                                                         className="hover:bg-indigo-50/30 transition-colors group"
                                                     >
-                                                        <TableCell className="py-4">
-                                                            <div className="flex items-center gap-3">
-                                                                <img
-                                                                    src={
-                                                                        attendance
-                                                                            .user
-                                                                            .avatar ||
-                                                                        `https://ui-avatars.com/api/?name=${encodeURIComponent(attendance.user.name)}&background=6366f1&color=fff`
-                                                                    }
-                                                                    className="w-10 h-10 rounded-xl object-cover"
-                                                                    alt=""
-                                                                />
-                                                                <div>
-                                                                    <p className="font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
-                                                                        {
+                                                        {role === 'owner' && (
+                                                            <TableCell className="py-4">
+                                                                <div className="flex items-center gap-3">
+                                                                    <img
+                                                                        src={
                                                                             attendance
                                                                                 .user
-                                                                                .name
+                                                                                .avatar ||
+                                                                            `https://ui-avatars.com/api/?name=${encodeURIComponent(attendance.user.name)}&background=6366f1&color=fff`
                                                                         }
-                                                                    </p>
-                                                                    <p className="text-xs text-gray-500">
-                                                                        {
-                                                                            attendance
-                                                                                .user
-                                                                                .email
-                                                                        }
-                                                                    </p>
+                                                                        className="w-10 h-10 rounded-xl object-cover"
+                                                                        alt=""
+                                                                    />
+                                                                    <div>
+                                                                        <p className="font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                                                                            {
+                                                                                attendance
+                                                                                    .user
+                                                                                    .name
+                                                                            }
+                                                                        </p>
+                                                                        <p className="text-xs text-gray-500">
+                                                                            {
+                                                                                attendance
+                                                                                    .user
+                                                                                    .email
+                                                                            }
+                                                                        </p>
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                        </TableCell>
+                                                            </TableCell>
+                                                        )}
                                                         <TableCell>
                                                             <div className="flex flex-col">
                                                                 <span className="font-semibold text-gray-700">
@@ -425,7 +432,7 @@ export default function Report({ attendances, employees, filters }: Props) {
                                         ) : (
                                             <TableRow>
                                                 <TableCell
-                                                    colSpan={6}
+                                                    colSpan={role === 'owner' ? 7 : 6}
                                                     className="h-48 text-center text-gray-400"
                                                 >
                                                     Tidak ada data absensi untuk

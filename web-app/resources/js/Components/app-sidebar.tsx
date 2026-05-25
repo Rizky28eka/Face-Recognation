@@ -6,7 +6,6 @@ import {
     Building2Icon,
     CameraIcon,
     ClipboardListIcon,
-    CpuIcon,
     FileTextIcon,
     HelpCircleIcon,
     LayoutDashboardIcon,
@@ -40,7 +39,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 email: string;
                 role: 'superadmin' | 'owner' | 'karyawan';
                 avatar?: string;
-                tenant_id: number;
             };
         };
     }>().props;
@@ -63,19 +61,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     if (role === 'superadmin') {
         navMain.push(
             {
-                title: 'Manajemen Tenant',
-                url: route('tenants.index'),
+                title: 'Daftar Perusahaan',
+                url: route('admin.companies'),
                 icon: Building2Icon,
             },
             {
-                title: 'Status AI',
-                url: route('ai.status'),
-                icon: CpuIcon,
-            },
-            {
-                title: 'Pengaturan Sistem',
-                url: route('system.settings'),
-                icon: SettingsIcon,
+                title: 'Laporan Global',
+                url: route('attendance.report'),
+                icon: ClipboardListIcon,
             },
         );
     } else if (role === 'owner') {
@@ -145,7 +138,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                             <a href="#">
                                 <ArrowUpCircleIcon className="h-5 w-5 text-indigo-600" />
                                 <span className="text-base font-semibold">
-                                    Sikawan AI
+                                    Sikawan
                                 </span>
                             </a>
                         </SidebarMenuButton>

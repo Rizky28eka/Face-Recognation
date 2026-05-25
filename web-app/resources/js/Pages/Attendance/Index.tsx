@@ -20,6 +20,8 @@ import {
     CheckCircle2,
     XCircle,
     Upload,
+    VideoOff,
+    ShieldAlert,
 } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
@@ -51,6 +53,56 @@ export default function Index({ recentAttendances, userRole }: Props) {
     const [networkInfo, setNetworkInfo] = useState<string>("Unknown");
     const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
     const [message, setMessage] = useState("");
+    const [cameraPermission, setCameraPermission] = useState<
+        "prompt" | "granted" | "denied" | "checking"
+    >("checking");
+
+    // Check & request camera permission on mount
+    useEffect(() => {
+        if (userRole !== "karyawan") return;
+
+        const checkCamera = async () => {
+            try {
+                // Check existing permission state first
+                if ("permissions" in navigator) {
+                    const perm = await navigator.permissions.query({
+                        name: "camera" as PermissionName,
+                    });
+                    if (perm.state === "granted") {
+                        setCameraPermission("granted");
+                        return;
+                    }
+                    if (perm.state === "denied") {
+                        setCameraPermission("denied");
+                        return;
+                    }
+                }
+                // State is "prompt" — belum pernah diminta
+                setCameraPermission("prompt");
+            } catch {
+                setCameraPermission("prompt");
+            }
+        };
+
+        checkCamera();
+    }, [userRole]);
+
+    const requestCameraAccess = async () => {
+        setCameraPermission("checking");
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: true,
+            });
+            stream.getTracks().forEach((t) => t.stop()); // stop immediately, Webcam component manages its own stream
+            setCameraPermission("granted");
+            toast.success("Akses kamera berhasil diberikan.");
+        } catch {
+            setCameraPermission("denied");
+            toast.error(
+                "Akses kamera ditolak. Izinkan kamera di pengaturan browser.",
+            );
+        }
+    };
 
     // Get Geolocation on mount
     useEffect(() => {
@@ -64,11 +116,18 @@ export default function Index({ recentAttendances, userRole }: Props) {
                 },
                 (error) => {
                     console.error("Error getting location:", error);
-                    toast.error(
-                        "Gagal mendapatkan lokasi. Pastikan GPS aktif.",
-                    );
+                    const msg =
+                        error.code === 1
+                            ? "Izin lokasi ditolak. Izinkan akses lokasi di browser untuk absensi WFO."
+                            : error.code === 2
+                              ? "Lokasi tidak tersedia. Pastikan GPS aktif."
+                              : "Gagal mendapatkan lokasi. Coba muat ulang halaman.";
+                    toast.error(msg);
                 },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
             );
+        } else {
+            toast.error("Browser tidak mendukung GPS.");
         }
 
         // Get Network Info
@@ -196,14 +255,77 @@ export default function Index({ recentAttendances, userRole }: Props) {
                                     <CardContent className="p-0 relative">
                                         {!imgSrc ? (
                                             <div className="aspect-video bg-black relative group">
+                                                {/* Camera permission states */}
+                                                {cameraPermission === "checking" && (
+                                                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-gray-900 gap-3">
+                                                        <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
+                                                        <p className="text-white/70 text-sm">Memeriksa izin kamera...</p>
+                                                    </div>
+                                                )}
+
+                                                {cameraPermission === "prompt" && (
+                                                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-gray-900 gap-4 px-6 text-center">
+                                                        <div className="w-16 h-16 rounded-full bg-indigo-500/20 flex items-center justify-center">
+                                                            <Camera className="w-8 h-8 text-indigo-400" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-white font-semibold text-base">Izin Kamera Diperlukan</p>
+                                                            <p className="text-white/60 text-sm mt-1">
+                                                                Sistem absensi membutuhkan akses kamera untuk verifikasi wajah.
+                                                            </p>
+                                                        </div>
+                                                        <Button
+                                                            onClick={requestCameraAccess}
+                                                            className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2"
+                                                        >
+                                                            <Camera className="w-4 h-4" />
+                                                            Izinkan Akses Kamera
+                                                        </Button>
+                                                    </div>
+                                                )}
+
+                                                {cameraPermission === "denied" && (
+                                                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-gray-900 gap-4 px-6 text-center">
+                                                        <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center">
+                                                            <ShieldAlert className="w-8 h-8 text-red-400" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-white font-semibold text-base">Akses Kamera Ditolak</p>
+                                                            <p className="text-white/60 text-sm mt-1">
+                                                                Buka pengaturan browser dan izinkan akses kamera untuk situs ini, lalu muat ulang halaman.
+                                                            </p>
+                                                        </div>
+                                                        <div className="flex gap-2">
+                                                            <Button
+                                                                variant="outline"
+                                                                onClick={requestCameraAccess}
+                                                                className="border-white/20 text-white hover:bg-white/10 gap-2"
+                                                            >
+                                                                <VideoOff className="w-4 h-4" />
+                                                                Coba Lagi
+                                                            </Button>
+                                                            <Button
+                                                                variant="outline"
+                                                                onClick={() => window.location.reload()}
+                                                                className="border-white/20 text-white hover:bg-white/10"
+                                                            >
+                                                                Muat Ulang
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                )}
+
                                                 <Webcam
                                                     audio={false}
                                                     ref={webcamRef}
                                                     screenshotFormat="image/jpeg"
+                                                    mirrored={false}
                                                     className="w-full h-full object-cover"
                                                     videoConstraints={{
                                                         facingMode: "user",
                                                     }}
+                                                    onUserMedia={() => setCameraPermission("granted")}
+                                                    onUserMediaError={() => setCameraPermission("denied")}
                                                 />
                                                 <div className="absolute inset-0 border-2 border-dashed border-white/20 m-6 md:m-12 rounded-3xl pointer-events-none flex items-center justify-center transition-all group-hover:border-white/40">
                                                     <div className="w-48 h-48 md:w-72 md:h-72 border-2 border-indigo-400/50 rounded-full animate-pulse"></div>
@@ -233,10 +355,11 @@ export default function Index({ recentAttendances, userRole }: Props) {
                                                     <div className="flex flex-col md:flex-row gap-3 w-full max-w-md justify-center">
                                                         <Button
                                                             onClick={capture}
-                                                            className="flex-1 h-14 md:h-16 text-lg bg-indigo-600 hover:bg-indigo-700 rounded-2xl shadow-lg shadow-indigo-200 transition-all active:scale-95"
+                                                            disabled={cameraPermission !== "granted"}
+                                                            className="flex-1 h-14 md:h-16 text-lg bg-indigo-600 hover:bg-indigo-700 rounded-2xl shadow-lg shadow-indigo-200 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                                                         >
                                                             <Camera className="mr-2 w-5 h-5" />
-                                                            Ambil Foto
+                                                            {cameraPermission === "granted" ? "Ambil Foto" : "Izinkan Kamera Dulu"}
                                                         </Button>
 
                                                         <input

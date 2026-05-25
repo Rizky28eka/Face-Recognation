@@ -20,11 +20,14 @@ import {
 import { toast } from 'sonner';
 
 const REGISTRATION_STEPS = [
-    { title: 'Lurus', desc: 'Tatap lurus ke depan menghadap kamera' },
-    { title: 'Tengok Kiri', desc: 'Tengokkan kepala Anda sedikit ke kiri' },
-    { title: 'Tengok Kanan', desc: 'Tengokkan kepala Anda sedikit ke kanan' },
-    { title: 'Senyum', desc: 'Berikan senyuman terbaik Anda ke kamera' },
-    { title: 'Lihat Atas', desc: 'Angkat dagu dan lihat sedikit ke atas' },
+    { title: 'Lurus',        desc: 'Tatap lurus ke depan, ekspresi netral' },
+    { title: 'Senyum',       desc: 'Berikan senyuman natural ke kamera' },
+    { title: 'Tengok Kiri',  desc: 'Tengokkan kepala sedikit ke kiri' },
+    { title: 'Tengok Kanan', desc: 'Tengokkan kepala sedikit ke kanan' },
+    { title: 'Lihat Atas',   desc: 'Angkat dagu, lihat sedikit ke atas' },
+    { title: 'Lihat Bawah',  desc: 'Tundukkan kepala, lihat sedikit ke bawah' },
+    { title: 'Dekat',        desc: 'Dekatkan wajah ke kamera (~30cm)' },
+    { title: 'Agak Jauh',    desc: 'Mundur sedikit dari kamera (~60cm)' },
 ];
 
 interface CapturedImage {
@@ -78,8 +81,10 @@ export default function FaceSetup() {
         setRetakeIndex(null);
     };
 
+    const TOTAL_STEPS = REGISTRATION_STEPS.length;
+
     const submit = async () => {
-        if (images.length !== 5) return;
+        if (images.length !== TOTAL_STEPS) return;
 
         setProcessing(true);
         let hasError = false;
@@ -171,7 +176,7 @@ export default function FaceSetup() {
         }
     };
 
-    const isComplete = currentStep === 5;
+    const isComplete = currentStep === TOTAL_STEPS;
     const isRetaking = retakeIndex !== null;
 
     return (
@@ -183,7 +188,7 @@ export default function FaceSetup() {
                     Registrasi Wajah
                 </h2>
                 <p className="mt-2 text-sm text-gray-600">
-                    Sistem membutuhkan 5 foto wajah Anda untuk akurasi maksimal.
+                    Sistem membutuhkan {REGISTRATION_STEPS.length} foto wajah Anda untuk akurasi maksimal.
                 </p>
             </div>
 
@@ -204,7 +209,7 @@ export default function FaceSetup() {
                                 ? 'Ambil Ulang Foto'
                                 : isComplete
                                   ? 'Selesai!'
-                                  : `Langkah ${currentStep + 1} dari 5`}
+                                  : `Langkah ${currentStep + 1} dari ${TOTAL_STEPS}`}
                         </CardTitle>
                         <CardDescription className="text-white/80 font-medium mt-2">
                             {isRetaking
@@ -248,7 +253,7 @@ export default function FaceSetup() {
                                     )}
                                 </>
                             ) : (
-                                <div className="w-full h-full bg-slate-900 grid grid-cols-5 p-2 gap-2">
+                                <div className="w-full h-full bg-slate-900 grid grid-cols-4 grid-rows-2 p-2 gap-2">
                                     {images.map((img, idx) => (
                                         <div
                                             key={idx}
@@ -303,7 +308,7 @@ export default function FaceSetup() {
                         <div className="h-2 w-full bg-gray-100">
                             <div
                                 className="h-full bg-emerald-500 transition-all duration-500"
-                                style={{ width: `${(currentStep / 5) * 100}%` }}
+                                style={{ width: `${(currentStep / TOTAL_STEPS) * 100}%` }}
                             />
                         </div>
 
@@ -328,7 +333,7 @@ export default function FaceSetup() {
                                         <Camera className="w-5 h-5 mr-2" />
                                         {isRetaking
                                             ? 'Ambil Ulang'
-                                            : `Ambil Foto (${currentStep + 1}/5)`}
+                                            : `Ambil Foto (${currentStep + 1}/${TOTAL_STEPS})`}
                                     </Button>
                                 ) : (
                                     <>
@@ -385,7 +390,7 @@ export default function FaceSetup() {
             </div>
 
             <div className="mt-8 text-center text-xs text-gray-400 uppercase tracking-widest font-bold">
-                FaceLog &copy; {new Date().getFullYear()} Bilcode Digital
+                Sikawan &copy; {new Date().getFullYear()} Bilcode Digital
                 Solutions
             </div>
         </div>

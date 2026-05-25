@@ -15,7 +15,7 @@ class SystemSettingController extends Controller
     public function index()
     {
         $settings = [
-            'app_name' => Setting::get('app_name', env('APP_NAME', 'Sikawan AI')),
+            'app_name' => Setting::get('app_name', env('APP_NAME', 'FaceLog')),
             'ai_service_url' => Setting::get('ai_service_url', env('AI_SERVICE_URL', 'http://127.0.0.1:8088/api/v1')),
         ];
 

@@ -4,15 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Traits\BelongsToTenant;
 
 class Attendance extends Model
 {
-    use BelongsToTenant;
-
     protected $fillable = [
         'user_id',
-        'tenant_id',
         'branch_id',
         'type',
         'work_type',

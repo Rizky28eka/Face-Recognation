@@ -3,10 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Attendance;
-use App\Models\Tenant;
+use App\Models\Branch;
 use App\Models\User;
 use App\Models\Leave;
-use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -29,70 +28,76 @@ class DashboardController extends Controller
         $data = [];
 
         if ($role === 'superadmin') {
-            $data = $this->getSuperAdminData();
+            $data = $this->getSuperadminData();
         } elseif ($role === 'owner') {
-            $data = $this->getOwnerData($user->tenant_id);
+            $data = $this->getOwnerData();
         } else {
             $data = $this->getKaryawanData($user->id);
         }
 
         return Inertia::render('Dashboard', [
-            'role' => $role,
-            'stats' => $data['stats'] ?? [],
-            'recentData' => $data['recentData'] ?? [],
-            'chartData' => $data['chartData'] ?? [],
+            'role'        => $role,
+            'stats'       => $data['stats']       ?? [],
+            'recentData'  => $data['recentData']  ?? [],
+            'chartData'   => $data['chartData']   ?? [],
+            'tenantStats' => $data['tenantStats'] ?? [],
         ]);
     }
 
-    private function getSuperAdminData()
+
+
+    private function getSuperadminData()
     {
-        $aiData = $this->faceService->getStatus();
-        $status = $aiData['status'] ?? 'offline';
-        
-        // Handle different response formats from AI service
-        $metrics = $aiData['metrics'] ?? $aiData;
-        $accuracy = isset($metrics['accuracy']) ? $metrics['accuracy'] . '%' : 'N/A';
-        $totalUsers = $metrics['total_classes'] ?? 0;
-        $totalImages = $metrics['total_images'] ?? 0;
+        $today = Carbon::today()->toDateString();
+
+        $branchStats = Branch::withCount(['users as owner_count' => function ($q) {
+            $q->where('role', 'owner');
+        }, 'users as karyawan_count' => function ($q) {
+            $q->where('role', 'karyawan');
+        }])->get()->map(fn($b) => [
+            'id'             => $b->id,
+            'name'           => $b->name,
+            'slug'           => $b->name,
+            'owner_count'    => $b->owner_count,
+            'karyawan_count' => $b->karyawan_count,
+        ]);
 
         return [
             'stats' => [
-                ['label' => 'Total Tenant', 'value' => Tenant::count(), 'icon' => 'Building2'],
-                ['label' => 'Trained Users', 'value' => $totalUsers, 'icon' => 'Users'],
-                ['label' => 'Total Absensi', 'value' => Attendance::count(), 'icon' => 'CalendarCheck'],
-                ['label' => 'AI Accuracy', 'value' => $accuracy, 'icon' => 'Target'],
+                ['label' => 'Total Cabang',    'value' => Branch::count(),                                               'icon' => 'Building2'],
+                ['label' => 'Total Karyawan',  'value' => User::where('role', 'karyawan')->count(),                      'icon' => 'Users'],
+                ['label' => 'Absensi Hari Ini','value' => Attendance::whereDate('attended_at', $today)->count(),         'icon' => 'UserCheck'],
+                ['label' => 'Total Absensi',   'value' => Attendance::count(),                                           'icon' => 'ClipboardList'],
             ],
-            'recentData' => Tenant::withCount(['users', 'attendances'])->latest()->limit(5)->get(),
-            'auditLogs' => AuditLog::with('user')->latest()->limit(10)->get(),
+            'recentData'  => Attendance::with('user')->latest('attended_at')->limit(10)->get(),
+            'chartData'   => $this->getWeeklyChartData(),
+            'tenantStats' => $branchStats,
         ];
     }
 
-    private function getOwnerData($tenantId)
+    private function getOwnerData()
     {
         $today = Carbon::today()->toDateString();
-        $onLeaveCount = Leave::where('tenant_id', $tenantId)
-            ->where('status', 'approved')
+        $onLeaveCount = Leave::where('status', 'approved')
             ->where('start_date', '<=', $today)
             ->where('end_date', '>=', $today)
             ->count();
         
-        $pendingLeaveCount = Leave::where('tenant_id', $tenantId)
-            ->where('status', 'pending')
+        $pendingLeaveCount = Leave::where('status', 'pending')
             ->count();
 
         return [
             'stats' => [
-                ['label' => 'Karyawan Aktif', 'value' => User::where('tenant_id', $tenantId)->count(), 'icon' => 'Users'],
-                ['label' => 'Hadir Hari Ini', 'value' => Attendance::where('tenant_id', $tenantId)->whereDate('created_at', Carbon::today())->count(), 'icon' => 'UserCheck'],
+                ['label' => 'Karyawan Aktif', 'value' => User::count(), 'icon' => 'Users'],
+                ['label' => 'Hadir Hari Ini', 'value' => Attendance::whereDate('created_at', Carbon::today())->count(), 'icon' => 'UserCheck'],
                 ['label' => 'Karyawan Cuti', 'value' => $onLeaveCount, 'icon' => 'Coffee'],
                 ['label' => 'Menunggu Persetujuan', 'value' => $pendingLeaveCount, 'icon' => 'ClipboardCheck'],
             ],
             'recentData' => Attendance::with('user')
-                ->where('tenant_id', $tenantId)
                 ->latest()
                 ->limit(10)
                 ->get(),
-            'chartData' => $this->getWeeklyChartData($tenantId),
+            'chartData' => $this->getWeeklyChartData(),
         ];
     }
 
@@ -113,14 +118,14 @@ class DashboardController extends Controller
         ];
     }
 
-    private function getWeeklyChartData($tenantId)
+    private function getWeeklyChartData()
     {
         $data = [];
         for ($i = 6; $i >= 0; $i--) {
             $date = Carbon::today()->subDays($i);
             $data[] = [
                 'day' => $date->format('D'),
-                'count' => Attendance::where('tenant_id', $tenantId)->whereDate('created_at', $date)->count(),
+                'count' => Attendance::whereDate('created_at', $date)->count(),
             ];
         }
         return $data;

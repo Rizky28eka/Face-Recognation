@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\OfficeSetting;
+use App\Models\Branch;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
@@ -11,11 +11,8 @@ class OfficeSettingController extends Controller
 {
     public function index()
     {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-        $tenantId = $user->tenant_id;
-        $settings = OfficeSetting::firstOrCreate(
-            ['tenant_id' => $tenantId],
+        $settings = Branch::firstOrCreate(
+            ['id' => 1],
             [
                 'latitude' => '-6.200000',
                 'longitude' => '106.816666',
@@ -32,10 +29,7 @@ class OfficeSettingController extends Controller
 
     public function update(Request $request)
     {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-        $tenantId = $user->tenant_id;
-        $settings = OfficeSetting::where('tenant_id', $tenantId)->firstOrFail();
+        $settings = Branch::firstOrFail();
 
         $validated = $request->validate([
             'latitude' => 'required|string',

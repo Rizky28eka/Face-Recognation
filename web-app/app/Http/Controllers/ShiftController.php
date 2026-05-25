@@ -13,7 +13,7 @@ class ShiftController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        $shifts = Shift::where('tenant_id', $user->tenant_id)->get();
+        $shifts = Shift::get();
 
         return Inertia::render('Settings/Shifts', [
             'shifts' => $shifts
@@ -33,7 +33,7 @@ class ShiftController extends Controller
             'work_type' => 'required|in:wfo,wfh,hybrid',
         ]);
 
-        $validated['tenant_id'] = $user->tenant_id;
+
 
         Shift::create($validated);
 
@@ -42,9 +42,7 @@ class ShiftController extends Controller
 
     public function update(Request $request, Shift $shift)
     {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-        if ($shift->tenant_id !== $user->tenant_id) abort(403);
+
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -61,9 +59,7 @@ class ShiftController extends Controller
 
     public function destroy(Shift $shift)
     {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-        if ($shift->tenant_id !== $user->tenant_id) abort(403);
+
 
         $shift->delete();
 

@@ -28,8 +28,7 @@ class AttendanceController extends Controller
     public function index()
     {
         // Ambil riwayat absen terbaru
-        $recentAttendances = Attendance::where('tenant_id', Auth::user()->tenant_id)
-            ->with(['user', 'branch'])
+        $recentAttendances = Attendance::with(['user', 'branch'])
             ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();
@@ -71,7 +70,7 @@ class AttendanceController extends Controller
 
         // Jika user belum punya cabang spesifik dan bukan WFH, cari cabang mana saja yang masuk radius
         if (!$branch && !$isWfh) {
-            $branches = Branch::where('tenant_id', $user->tenant_id)->where('is_active', true)->get();
+            $branches = Branch::where('is_active', true)->get();
             
             if ($request->latitude && $request->longitude) {
                 foreach ($branches as $b) {
@@ -84,10 +83,13 @@ class AttendanceController extends Controller
             }
         }
 
-        if (!$branch && !$isWfh && Branch::where('tenant_id', $user->tenant_id)->where('is_active', true)->exists()) {
-             return response()->json([
+        if (!$branch && !$isWfh && Branch::where('is_active', true)->exists()) {
+            $noCoords = !$request->latitude || !$request->longitude;
+            return response()->json([
                 'success' => false,
-                'message' => "Anda berada di luar radius cabang kantor terdaftar."
+                'message' => $noCoords
+                    ? "Lokasi tidak terdeteksi. Aktifkan GPS dan izinkan akses lokasi di browser, lalu coba lagi."
+                    : "Anda berada di luar radius cabang kantor terdaftar."
             ], 403);
         }
 
@@ -146,7 +148,16 @@ class AttendanceController extends Controller
         }
         file_put_contents($tempPath, base64_decode($image));
 
-        $result = $this->faceService->predictFromPath($tempPath);
+        // Kirim daftar user ID dari branch yang sama agar prediksi hanya dibandingkan sesama karyawan satu perusahaan
+        $branchUserIds = [];
+        if ($user->branch_id) {
+            $branchUserIds = \App\Models\User::where('branch_id', $user->branch_id)
+                ->where('role', 'karyawan')
+                ->pluck('id')
+                ->toArray();
+        }
+
+        $result = $this->faceService->predictFromPath($tempPath, $branchUserIds);
 
         if (isset($result['status']) && $result['status'] === 'recognized') {
             // Ekstrak ID dari nama yang dikembalikan AI (format: 1_rizky)
@@ -245,7 +256,6 @@ class AttendanceController extends Controller
                 'longitude' => $request->input('longitude'),
                 'ip_address' => $request->ip(),
                 'network_info' => $request->input('network_info'),
-                'tenant_id' => $user->tenant_id,
                 'branch_id' => $branch ? $branch->id : null,
                 'attended_at' => $now,
                 'late_minutes' => $lateMinutes,
@@ -279,9 +289,17 @@ class AttendanceController extends Controller
 
         if (file_exists($tempPath)) unlink($tempPath);
 
+        $reason = $result['reason'] ?? null;
+        $failMessage = match($reason) {
+            'no_face'       => 'Wajah tidak terdeteksi. Pastikan wajah terlihat jelas dan pencahayaan cukup.',
+            'not_in_branch' => 'Wajah tidak terdaftar di perusahaan ini. Silakan daftarkan wajah Anda terlebih dahulu.',
+            'low_confidence'=> 'Wajah tidak dikenali. Pastikan pencahayaan cukup dan posisi wajah menghadap kamera.',
+            default         => 'Wajah tidak dikenali. Coba lagi atau hubungi admin.',
+        };
+
         return response()->json([
             'success' => false,
-            'message' => "Wajah tidak dikenali atau pencahayaan kurang baik.",
+            'message' => $failMessage,
             'data' => $result
         ], 400);
     }
@@ -305,7 +323,7 @@ class AttendanceController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        $query = Attendance::where('tenant_id', $user->tenant_id)->with(['user', 'branch']);
+        $query = Attendance::with(['user', 'branch']);
 
         if ($request->filled('start_date') && $request->filled('end_date')) {
             $query->whereBetween('created_at', [
@@ -314,20 +332,25 @@ class AttendanceController extends Controller
             ]);
         }
 
-        if ($request->filled('user_id')) {
-            $query->where('user_id', $request->user_id);
+        if ($user->role === 'karyawan') {
+            $query->where('user_id', $user->id);
+            $employees = collect([$user]);
+        } else {
+            if ($request->filled('user_id')) {
+                $query->where('user_id', $request->user_id);
+            }
+            $employees = User::orderBy('name')->get();
         }
 
         $attendances = $query->orderBy('created_at', 'desc')
             ->paginate(15)
             ->withQueryString();
 
-        $employees = User::orderBy('name')->get();
-
         return Inertia::render('Attendance/Report', [
             'attendances' => $attendances,
             'employees' => $employees,
             'filters' => $request->only(['start_date', 'end_date', 'user_id']),
+            'role' => $user->role,
         ]);
     }
 

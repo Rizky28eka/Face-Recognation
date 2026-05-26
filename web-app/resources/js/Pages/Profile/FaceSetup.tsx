@@ -229,7 +229,8 @@ export default function FaceSetup() {
                                         audio={false}
                                         ref={webcamRef}
                                         screenshotFormat="image/jpeg"
-                                        className="w-full h-full object-cover transform scale-x-[-1]"
+                                        mirrored={true}
+                                        className="w-full h-full object-cover"
                                         videoConstraints={{
                                             facingMode: 'user',
                                         }}

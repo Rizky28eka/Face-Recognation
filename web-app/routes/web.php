@@ -52,11 +52,14 @@ Route::middleware(['auth', 'verified', 'face_registered'])->group(function () {
         ->middleware('role:karyawan')
         ->name('attendance.check-in');
     Route::get('/attendance/report', [AttendanceController::class, 'report'])
-        ->middleware('role:superadmin,owner')
+        ->middleware('role:superadmin,owner,karyawan')
         ->name('attendance.report');
     Route::get('/attendance/{attendance}', [AttendanceController::class, 'show'])
-        ->middleware('role:owner,superadmin')
+        ->middleware('role:owner,superadmin,karyawan')
         ->name('attendance.show');
+    Route::get('/attendance-failed', [AttendanceController::class, 'failedAttempts'])
+        ->middleware('role:superadmin,owner')
+        ->name('attendance.failed');
 
     // Manajemen karyawan: hanya owner
     Route::middleware('role:owner')->group(function () {

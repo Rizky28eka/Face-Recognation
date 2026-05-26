@@ -19,5 +19,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->command?->info('✅ Superadmin: superadmin@sikawan.com / password');
+
+        $this->call(BilcodeSeeder::class);
     }
 }

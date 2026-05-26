@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Attendance;
+use App\Models\FailedAttendance;
 use App\Models\User;
 use App\Models\Branch;
 use App\Models\Leave;
@@ -27,8 +28,11 @@ class AttendanceController extends Controller
      */
     public function index()
     {
-        // Ambil riwayat absen terbaru
+        /** @var \App\Models\User $currentUser */
+        $currentUser = Auth::user();
+
         $recentAttendances = Attendance::with(['user', 'branch'])
+            ->when($currentUser->role === 'karyawan', fn($q) => $q->where('user_id', $currentUser->id))
             ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();
@@ -166,8 +170,21 @@ class AttendanceController extends Controller
 
             // Pastikan wajah yang di-scan adalah user yang sedang login (keamanan tambahan)
             if ((string)$user->id !== $predictedId) {
-                 if (file_exists($tempPath)) unlink($tempPath);
-                 return response()->json([
+                $failImagePath = $this->saveFailedImage($image, $imageName, $user->id, 'face_mismatch');
+                FailedAttendance::create([
+                    'user_id'        => $user->id,
+                    'branch_id'      => $branch?->id,
+                    'reason'         => 'face_mismatch',
+                    'reason_message' => "Wajah tidak cocok dengan akun. Terdeteksi sebagai ID: {$predictedId}",
+                    'confidence'     => $result['confidence'] ?? null,
+                    'image_path'     => $failImagePath,
+                    'latitude'       => $request->input('latitude'),
+                    'longitude'      => $request->input('longitude'),
+                    'ip_address'     => $request->ip(),
+                    'attempted_at'   => now(),
+                ]);
+                if (file_exists($tempPath)) unlink($tempPath);
+                return response()->json([
                     'success' => false,
                     'message' => "Wajah tidak cocok dengan akun Anda! (Terdeteksi ID: " . $predictedId . ")",
                     'data' => $result
@@ -287,8 +304,6 @@ class AttendanceController extends Controller
             ]);
         }
 
-        if (file_exists($tempPath)) unlink($tempPath);
-
         $reason = $result['reason'] ?? null;
         $failMessage = match($reason) {
             'no_face'       => 'Wajah tidak terdeteksi. Pastikan wajah terlihat jelas dan pencahayaan cukup.',
@@ -297,11 +312,72 @@ class AttendanceController extends Controller
             default         => 'Wajah tidak dikenali. Coba lagi atau hubungi admin.',
         };
 
+        $failImagePath = $this->saveFailedImage($image, $imageName, $user->id, $reason ?? 'unknown');
+        FailedAttendance::create([
+            'user_id'        => $user->id,
+            'branch_id'      => $branch?->id,
+            'reason'         => $reason ?? 'unknown',
+            'reason_message' => $failMessage,
+            'confidence'     => $result['confidence'] ?? null,
+            'image_path'     => $failImagePath,
+            'latitude'       => $request->input('latitude'),
+            'longitude'      => $request->input('longitude'),
+            'ip_address'     => $request->ip(),
+            'attempted_at'   => now(),
+        ]);
+
+        if (file_exists($tempPath)) unlink($tempPath);
+
         return response()->json([
             'success' => false,
             'message' => $failMessage,
             'data' => $result
         ], 400);
+    }
+
+    private function saveFailedImage(string $imageBase64, string $imageName, int $userId, string $reason): ?string
+    {
+        try {
+            $path = "attendances/{$userId}/failed/{$reason}_{$imageName}";
+            Storage::disk('public')->put($path, base64_decode($imageBase64));
+            return $path;
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
+    public function failedAttempts(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if ($user->role === 'karyawan') {
+            abort(403);
+        }
+
+        $query = FailedAttendance::with(['user', 'branch']);
+
+        if ($user->role === 'owner' && $user->branch_id) {
+            $query->where('branch_id', $user->branch_id);
+        }
+
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $query->whereBetween('attempted_at', [
+                $request->start_date . ' 00:00:00',
+                $request->end_date . ' 23:59:59',
+            ]);
+        }
+
+        if ($request->filled('reason')) {
+            $query->where('reason', $request->reason);
+        }
+
+        $failed = $query->orderBy('attempted_at', 'desc')->paginate(20)->withQueryString();
+
+        return Inertia::render('Attendance/FailedAttempts', [
+            'failed'  => $failed,
+            'filters' => $request->only(['start_date', 'end_date', 'reason']),
+        ]);
     }
 
     private function calculateDistance($lat1, $lon1, $lat2, $lon2)
@@ -359,8 +435,15 @@ class AttendanceController extends Controller
      */
     public function show(Attendance $attendance)
     {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if ($user->role === 'karyawan' && $attendance->user_id !== $user->id) {
+            abort(403);
+        }
+
         $attendance->load(['user', 'branch']);
-        
+
         return Inertia::render('Attendance/Show', [
             'attendance' => $attendance,
         ]);

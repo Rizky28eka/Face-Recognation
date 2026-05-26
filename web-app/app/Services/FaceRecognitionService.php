@@ -118,6 +118,20 @@ class FaceRecognitionService
     }
 
     /**
+     * Hapus data wajah user dari dataset AI dan retrain model.
+     */
+    public function removeFace(string $faceLabel): array
+    {
+        try {
+            $response = Http::delete("{$this->baseUrl}/remove-face/{$faceLabel}");
+            return $response->json() ?? [];
+        } catch (\Exception $e) {
+            Log::error("AI Service Error (RemoveFace): " . $e->getMessage());
+            return ['status' => 'error', 'message' => 'Koneksi ke AI Service gagal.'];
+        }
+    }
+
+    /**
      * Update AI Service Hyperparameters.
      */
     public function updateSettings($data)

@@ -151,9 +151,13 @@ cython_debug/
 models/*.pkl
 models/*.clf
 models/metrics.json
+dataset/raw/
+dataset/processed/
 dataset/train/
 dataset/val/
 dataset/test/
 dataset/logs/
+dataset/inference_logs.json
+dataset/metadata.json
 !models/.gitkeep
 !dataset/.gitkeep

@@ -1,1 +1,78 @@
-[]
+[
+  {
+    "name": "3_eka",
+    "confidence": 1.0,
+    "status": "recognized",
+    "bbox": [
+      321,
+      223,
+      235,
+      235
+    ],
+    "detection_time": 67.15,
+    "extraction_time": 7.52,
+    "prediction_time": 14.56,
+    "timestamp": "2026-05-25T20:14:28.073209",
+    "model_accuracy": 100.0,
+    "model_f1_score": 100.0,
+    "model_precision": 100.0,
+    "model_recall": 100.0
+  },
+  {
+    "name": "4_gb",
+    "confidence": 1.0,
+    "status": "recognized",
+    "bbox": [
+      306,
+      150,
+      307,
+      307
+    ],
+    "detection_time": 67.27,
+    "extraction_time": 3.75,
+    "prediction_time": 3.3,
+    "timestamp": "2026-05-25T20:13:42.959742",
+    "model_accuracy": 100.0,
+    "model_f1_score": 100.0,
+    "model_precision": 100.0,
+    "model_recall": 100.0
+  },
+  {
+    "name": "5_akbar",
+    "confidence": 1.0,
+    "status": "recognized",
+    "bbox": [
+      321,
+      205,
+      270,
+      270
+    ],
+    "detection_time": 55.57,
+    "extraction_time": 3.32,
+    "prediction_time": 2.5,
+    "timestamp": "2026-05-25T20:11:48.715434",
+    "model_accuracy": 100.0,
+    "model_f1_score": 100.0,
+    "model_precision": 100.0,
+    "model_recall": 100.0
+  },
+  {
+    "name": "3_eka",
+    "confidence": 0.99,
+    "status": "recognized",
+    "bbox": [
+      310,
+      197,
+      272,
+      272
+    ],
+    "detection_time": 65.45,
+    "extraction_time": 7.57,
+    "prediction_time": 11.06,
+    "timestamp": "2026-05-25T20:10:56.662498",
+    "model_accuracy": 100.0,
+    "model_f1_score": 100.0,
+    "model_precision": 100.0,
+    "model_recall": 100.0
+  }
+]

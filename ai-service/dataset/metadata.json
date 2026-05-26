@@ -1,12 +1,22 @@
 {
-  "last_updated": "2026-05-25T16:40:15",
+  "last_updated": "2026-05-25T20:13:27",
   "stats": {
-    "total_classes": 1,
-    "total_images": 8
+    "total_classes": 3,
+    "total_images": 24
   },
   "classes": [
     {
       "class": "3_eka",
+      "saved": 8,
+      "failed": 0
+    },
+    {
+      "class": "4_gb",
+      "saved": 8,
+      "failed": 0
+    },
+    {
+      "class": "5_akbar",
       "saved": 8,
       "failed": 0
     }

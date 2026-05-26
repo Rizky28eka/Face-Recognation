@@ -1,4 +1,5 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, Form
+from typing import Optional
 import cv2
 import numpy as np
 import io
@@ -283,7 +284,7 @@ async def update_ai_settings(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-def _parse_branch_ids(branch_user_ids_str: str | None) -> set[str]:
+def _parse_branch_ids(branch_user_ids_str: Optional[str]) -> set:
     """Parse JSON string of user IDs into a set of folder name prefixes like {'7', '12'}."""
     if not branch_user_ids_str:
         return set()
@@ -441,6 +442,50 @@ async def predict_face(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.delete("/remove-face/{name}")
+async def remove_face(name: str):
+    """
+    Hapus semua data wajah (raw + processed) untuk satu user dan retrain model.
+    Dipanggil otomatis saat karyawan dihapus dari sistem.
+    """
+    project_root      = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+    base_dataset_path = os.path.join(project_root, settings.DATASET_PATH)
+
+    deleted_dirs = []
+    for subfolder in ('raw', 'processed', 'train', 'val', 'test'):
+        target = os.path.join(base_dataset_path, subfolder, name)
+        if os.path.isdir(target):
+            shutil.rmtree(target)
+            deleted_dirs.append(subfolder)
+
+    print(f"[REMOVE-FACE] '{name}' dihapus dari: {deleted_dirs}")
+
+    # Retrain jika masih ada data
+    retrain_result = None
+    raw_root = os.path.join(base_dataset_path, 'raw')
+    has_data = os.path.isdir(raw_root) and any(
+        os.path.isdir(os.path.join(raw_root, d)) for d in os.listdir(raw_root)
+    )
+    if has_data:
+        retrain_result = trainer.run_training()
+        knn_service.load_model()
+    else:
+        # Tidak ada data tersisa — hapus model
+        for f in (settings.MODEL_PATH, settings.METRICS_PATH):
+            full = os.path.join(project_root, f)
+            if os.path.exists(full):
+                os.remove(full)
+        knn_service.model = None
+        print("[REMOVE-FACE] Semua data habis — model dihapus.")
+
+    return {
+        "status":         "success",
+        "name":           name,
+        "deleted_from":   deleted_dirs,
+        "retrained":      retrain_result is not None,
+        "retrain_result": retrain_result,
+    }
+
 @router.post("/add-face")
 async def add_face(
     name: str = Form(...),
@@ -478,15 +523,23 @@ async def add_face(
         preprocessed_temp = preprocessor.process(face_crop_temp)
         features_temp = feature_extractor.extract(preprocessed_temp)
 
-        predicted_name, confidence, _ = knn_service.predict(features_temp)
+        predicted_name, confidence, avg_distance = knn_service.predict(features_temp)
 
-        print(f"[DUPLIKASI CHECK] index={index} | Prediksi: '{predicted_name}' | Confidence: {confidence:.4f} | Mendaftar sebagai: '{safe_name}'")
+        # Cek jarak ke tetangga terdekat — jika jauh dari threshold, ini orang baru bukan duplikat
+        X_feat   = features_temp.reshape(1, -1)
+        raw_dist, _ = knn_service.model.kneighbors(X_feat)
+        min_dist = float(raw_dist[0][0])
+        dist_thresh = knn_service.distance_threshold or float('inf')
+
+        is_close_enough = min_dist < dist_thresh * 0.5  # harus sangat dekat (dalam 50% threshold)
+
+        print(f"[DUPLIKASI CHECK] index={index} | Prediksi: '{predicted_name}' | Confidence: {confidence:.4f} | Dist: {min_dist:.2f} | DistThresh: {dist_thresh:.2f} | Close: {is_close_enough} | Mendaftar sebagai: '{safe_name}'")
 
         allowed_ids = _parse_branch_ids(branch_user_ids)
         is_same_branch_duplicate = _is_in_branch(predicted_name, allowed_ids) if allowed_ids else False
 
-        if confidence >= 0.85 and predicted_name != safe_name and is_same_branch_duplicate:
-            print(f"[DUPLIKASI DITOLAK] Wajah cocok dengan '{predicted_name}' (confidence={confidence:.4f})")
+        if confidence >= 0.97 and is_close_enough and predicted_name != safe_name and is_same_branch_duplicate:
+            print(f"[DUPLIKASI DITOLAK] Wajah cocok dengan '{predicted_name}' (confidence={confidence:.4f} dist={min_dist:.2f})")
             raise HTTPException(
                 status_code=409,
                 detail=f"Wajah ini terdeteksi sudah terdaftar atas nama akun lain ({predicted_name.split('_')[0]}). Satu wajah hanya boleh memiliki satu akun."
@@ -497,24 +550,37 @@ async def add_face(
     base_dataset_path = os.path.join(project_root, settings.DATASET_PATH)
     raw_dir = os.path.join(base_dataset_path, 'raw', safe_name)
 
+    processed_dir = os.path.join(base_dataset_path, 'processed', safe_name)
     os.makedirs(raw_dir, exist_ok=True)
+    os.makedirs(processed_dir, exist_ok=True)
 
     # index=0 → foto pertama sesi baru, bersihkan foto lama
     if index == 0:
-        for fname in os.listdir(raw_dir):
-            fpath = os.path.join(raw_dir, fname)
-            try:
-                if os.path.isfile(fpath):
-                    os.unlink(fpath)
-            except Exception as e:
-                print(f'Failed to delete {fpath}: {e}')
+        for target_dir in (raw_dir, processed_dir):
+            for fname in os.listdir(target_dir):
+                fpath = os.path.join(target_dir, fname)
+                try:
+                    if os.path.isfile(fpath):
+                        os.unlink(fpath)
+                except Exception as e:
+                    print(f'Failed to delete {fpath}: {e}')
 
     existing = len([f for f in os.listdir(raw_dir) if f.lower().endswith(('.jpg', '.jpeg', '.png'))])
     filename  = f"{safe_name}_{existing + 1:04d}.jpg"
     save_path = os.path.join(raw_dir, filename)
 
-    # Simpan gambar asli (bukan crop) agar face detector bisa re-detect saat training
+    # Simpan gambar asli
     cv2.imwrite(save_path, image)
+
+    # Simpan versi grayscale+CLAHE ke processed/
+    try:
+        face_crop_proc = face_detector.crop_face(image, faces[0])
+        preprocessed   = preprocessor.process(face_crop_proc)
+        proc_path      = os.path.join(processed_dir, filename)
+        cv2.imwrite(proc_path, preprocessed)
+        print(f"[ADD-FACE] Saved processed: {proc_path}")
+    except Exception as e:
+        print(f"[ADD-FACE] Failed to save processed image: {e}")
 
     # Update metadata.json
     metadata_path = os.path.join(base_dataset_path, "metadata.json")

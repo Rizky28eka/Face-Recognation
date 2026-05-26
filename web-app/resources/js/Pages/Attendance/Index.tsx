@@ -19,7 +19,6 @@ import {
     Loader2,
     CheckCircle2,
     XCircle,
-    Upload,
     VideoOff,
     ShieldAlert,
 } from "lucide-react";
@@ -131,15 +130,30 @@ export default function Index({ recentAttendances, userRole }: Props) {
         }
 
         // Get Network Info
+        const updateNetwork = () => {
+            if ("connection" in navigator) {
+                const conn = (
+                    navigator as unknown as {
+                        connection: { effectiveType: string; downlink: number; rtt: number };
+                    }
+                ).connection;
+                const effectiveType = conn.effectiveType || "";
+                const label: Record<string, string> = {
+                    "slow-2g": "Sangat Lambat (2G)",
+                    "2g":      "Lambat (2G)",
+                    "3g":      "Sedang (3G)",
+                    "4g":      "Cepat (4G/WiFi)",
+                };
+                const downlink = conn.downlink ? ` · ${conn.downlink} Mbps` : "";
+                setNetworkInfo((label[effectiveType] ?? "Terdeteksi") + downlink);
+            } else {
+                setNetworkInfo("Browser tidak mendukung");
+            }
+        };
+        updateNetwork();
         if ("connection" in navigator) {
-            const conn = (
-                navigator as unknown as {
-                    connection: { effectiveType: string; type: string };
-                }
-            ).connection;
-            setNetworkInfo(
-                `${conn.effectiveType || "N/A"} (${conn.type || "unknown"})`,
-            );
+            const conn = (navigator as unknown as { connection: EventTarget }).connection;
+            conn.addEventListener("change", updateNetwork);
         }
     }, []);
 
@@ -203,20 +217,7 @@ export default function Index({ recentAttendances, userRole }: Props) {
         setMessage("");
     };
 
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const base64String = reader.result as string;
-                setImgSrc(base64String);
-                handleCheckIn(base64String);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
 
-    const fileInputRef = useRef<HTMLInputElement>(null);
 
     return (
         <SidebarProvider>
@@ -319,7 +320,7 @@ export default function Index({ recentAttendances, userRole }: Props) {
                                                     audio={false}
                                                     ref={webcamRef}
                                                     screenshotFormat="image/jpeg"
-                                                    mirrored={false}
+                                                    mirrored={true}
                                                     className="w-full h-full object-cover"
                                                     videoConstraints={{
                                                         facingMode: "user",
@@ -362,26 +363,6 @@ export default function Index({ recentAttendances, userRole }: Props) {
                                                             {cameraPermission === "granted" ? "Ambil Foto" : "Izinkan Kamera Dulu"}
                                                         </Button>
 
-                                                        <input
-                                                            type="file"
-                                                            ref={fileInputRef}
-                                                            onChange={
-                                                                handleFileUpload
-                                                            }
-                                                            accept="image/*"
-                                                            className="hidden"
-                                                        />
-
-                                                        <Button
-                                                            variant="outline"
-                                                            onClick={() =>
-                                                                fileInputRef.current?.click()
-                                                            }
-                                                            className="flex-1 h-14 md:h-16 text-lg border-2 border-indigo-100 hover:bg-indigo-50 text-indigo-600 rounded-2xl transition-all active:scale-95"
-                                                        >
-                                                            <Upload className="mr-2 w-5 h-5" />
-                                                            Upload Foto
-                                                        </Button>
                                                     </div>
                                                 )}
 

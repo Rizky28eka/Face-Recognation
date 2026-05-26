@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Shift;
 use App\Models\Branch;
+use App\Services\FaceRecognitionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -144,7 +146,7 @@ class KaryawanController extends Controller
         return redirect()->route('karyawan.index')->with('success', 'Data karyawan berhasil diperbarui.');
     }
 
-    public function destroy(User $user)
+    public function destroy(User $user, FaceRecognitionService $faceService)
     {
         /** @var \App\Models\User $currentUser */
         $currentUser = Auth::user();
@@ -152,6 +154,20 @@ class KaryawanController extends Controller
         if ($user->id === $currentUser->id) {
             abort(403);
         }
+
+        // Hapus dataset wajah dari AI service jika sudah registrasi
+        if ($user->is_face_registered) {
+            $faceLabel = $user->id . '_' . strtolower(str_replace(' ', '_', $user->name));
+            $faceService->removeFace($faceLabel);
+        }
+
+        // Hapus foto profil dari storage
+        if ($user->profile_photo_path) {
+            Storage::disk('public')->delete($user->profile_photo_path);
+        }
+
+        // Hapus foto absensi dari storage
+        Storage::disk('public')->deleteDirectory("attendances/{$user->id}");
 
         $user->delete();
 

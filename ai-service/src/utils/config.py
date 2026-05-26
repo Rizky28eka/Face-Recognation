@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     # Face Processing Configuration
     RESIZE_WIDTH: int = 100
     RESIZE_HEIGHT: int = 100
-    RECOGNITION_THRESHOLD: float = 0.6
+    RECOGNITION_THRESHOLD: float = 0.5
 
     # Training Configuration
     KNN_NEIGHBORS: int = 5

@@ -13,6 +13,7 @@ import {
     SettingsIcon,
     UsersIcon,
     CoffeeIcon,
+    ShieldAlertIcon,
 } from 'lucide-react';
 
 import { NavMain } from '@/Components/nav-main';
@@ -70,6 +71,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 url: route('attendance.report'),
                 icon: ClipboardListIcon,
             },
+            {
+                title: 'Absensi Gagal',
+                url: route('attendance.failed'),
+                icon: ShieldAlertIcon,
+            },
         );
     } else if (role === 'owner') {
         navMain.push(
@@ -82,6 +88,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 title: 'Laporan Absensi',
                 url: route('attendance.report'),
                 icon: ClipboardListIcon,
+            },
+            {
+                title: 'Absensi Gagal',
+                url: route('attendance.failed'),
+                icon: ShieldAlertIcon,
             },
             {
                 title: 'Pengaturan Kantor',
